@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getAllSlugs } from "@/lib/sanity.queries";
 import PortableTextRenderer from "@/components/PortableTextRenderer";
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const slugs = await getAllSlugs();
   return slugs.map((slug) => ({ slug }));

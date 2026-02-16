@@ -3,6 +3,8 @@ import SectionHeading from "@/components/SectionHeading";
 import BlogCard from "@/components/BlogCard";
 import { getAllPosts } from "@/lib/sanity.queries";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Blog",
 };
