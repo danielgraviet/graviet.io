@@ -12,7 +12,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       className="group block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-serif text-xl font-semibold group-hover:text-accent">
+        <h3 className="text-xl font-semibold group-hover:text-accent">
           {project.title}
         </h3>
         {project.featured && (

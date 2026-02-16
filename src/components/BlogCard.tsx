@@ -14,7 +14,7 @@ export default function BlogCard({ post }: { post: Post }) {
           day: "numeric",
         })}
       </time>
-      <h3 className="mt-2 font-serif text-xl font-semibold group-hover:text-accent">
+      <h3 className="mt-2 text-xl font-semibold group-hover:text-accent">
         {post.title}
       </h3>
       <p className="mt-2 text-text-secondary leading-relaxed">{post.excerpt}</p>

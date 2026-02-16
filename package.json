@@ -11,9 +11,12 @@
   "dependencies": {
     "@portabletext/react": "^6.0.2",
     "@sanity/client": "^7.15.0",
+    "@sanity/vision": "^5.9.0",
     "next": "16.1.6",
+    "next-sanity": "^12.1.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "sanity": "^5.9.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

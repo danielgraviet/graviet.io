@@ -99,35 +99,34 @@ export const placeholderPosts: Post[] = [
 export const placeholderProjects: Project[] = [
   {
     _id: "project-1",
-    title: "graviet.io",
+    title: "Helix",
     description:
-      "My personal website built with Next.js 16, Tailwind CSS v4, and Sanity CMS. You're looking at it right now!",
-    tags: ["Next.js", "Tailwind", "Sanity"],
-    url: "https://graviet.io",
+      "Self-extending AI agent that identifies missing capabilities and writes, containerizes, and deploys its own microservices. Features a Skill Factory using FastAPI and Jinja2 with a multi-provider agent loop and Telegram bot for real-time task management.",
+    tags: ["Python", "Docker", "FastAPI", "Anthropic API", "Pydantic"],
     featured: true,
   },
   {
     _id: "project-2",
-    title: "Task Flow",
+    title: "Code Quintet",
     description:
-      "A drag-and-drop project management app with real-time collaboration powered by WebSockets.",
-    tags: ["React", "Node.js", "WebSockets"],
+      "LLM ensemble system that generates five distinct code variants for a single task and benchmarks them in parallel using Daytona sandboxes against HumanEval datasets. Includes a Variant Marketplace for hot-swapping prompt strategies.",
+    tags: ["Python", "Daytona SDK", "OpenAI API", "HumanEval"],
     featured: true,
   },
   {
     _id: "project-3",
-    title: "CLI Weather",
+    title: "PolySandbox",
     description:
-      "A minimal command-line weather tool that fetches forecasts from the Open-Meteo API.",
-    tags: ["Go", "CLI", "API"],
-    featured: false,
+      "Backend-agnostic API to run and evaluate code across Daytona, E2B, and Docker through a single interface. Features a normalization layer for cross-sandbox metrics and a Streamlit dashboard for visual benchmarking.",
+    tags: ["FastAPI", "Streamlit", "Docker", "E2B", "Daytona"],
+    featured: true,
   },
   {
     _id: "project-4",
-    title: "Markdown Note Garden",
+    title: "infertrace",
     description:
-      "A local-first note-taking app with bi-directional linking and full-text search.",
-    tags: ["TypeScript", "SQLite", "Electron"],
+      "High-throughput monitoring layer for ML models inspired by distributed tracing systems like Jaeger. Uses Go and gRPC for low-latency telemetry with a Go-Python bridge for seamless data science integration.",
+    tags: ["Go", "gRPC", "Python"],
     featured: true,
   },
 ];

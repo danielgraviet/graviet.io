@@ -1,6 +1,6 @@
-import SectionHeading from "@/components/SectionHeading";
-import BlogCard from "@/components/BlogCard";
-import ProjectCard from "@/components/ProjectCard";
+import Link from "next/link";
+import ProjectRow from "@/components/ProjectRow";
+import RiceTerraces from "@/components/RiceTerraces";
 import { getLatestPosts } from "@/lib/sanity.queries";
 import { getAllProjects } from "@/lib/sanity.queries";
 
@@ -10,43 +10,64 @@ export default async function Home() {
     getAllProjects(),
   ]);
 
-  const featuredProjects = projects.filter((p) => p.featured);
-
   return (
     <>
       {/* Hero */}
-      <section className="py-12 text-center">
-        <h1 className="font-serif text-5xl font-bold leading-tight">
-          Hey, I&apos;m <span className="text-accent">Graviet</span>
+      <section className="relative flex h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden">
+        <h1 className="relative z-10 text-[15vw] font-black leading-none tracking-tighter">
+          DANIEL GRAVIET
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-text-secondary">
-          Developer, tinkerer, and lifelong learner. I build things for the web
-          and write about what I discover along the way.
+        <p className="relative z-10 mt-4 text-xs uppercase tracking-[0.3em] text-text-secondary">
+          Builder &middot; Tinkerer
         </p>
+        <RiceTerraces className="pointer-events-none absolute bottom-0 left-0 w-full text-foreground" />
       </section>
 
-      {/* Latest Posts */}
-      <section className="py-12">
-        <SectionHeading
-          title="Latest Posts"
-          subtitle="Recent thoughts and tutorials"
-        />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <BlogCard key={post._id} post={post} />
+      {/* About / Intro */}
+      <section className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2 md:items-start">
+        <h2 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+          I explore new technologies through projects and write about what I discover.
+        </h2>
+        <div className="flex items-start">
+          <p className="text-sm leading-relaxed text-text-secondary">
+            I love meeting new people, learning new things, and building impactful products. Right now, I’m focused on large-scale distributed systems, but I’m always excited to explore new domains and technologies.
+          </p>
+        </div>
+      </section>
+
+      {/* Project Gallery */}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <p className="mb-8 text-xs uppercase tracking-[0.2em] text-text-secondary">
+          Selected Projects
+        </p>
+        <div className="border-t border-border">
+          {projects.map((project) => (
+            <ProjectRow key={project._id} project={project} />
           ))}
         </div>
       </section>
 
-      {/* Featured Projects */}
-      <section className="py-12">
-        <SectionHeading
-          title="Featured Projects"
-          subtitle="A few things I've been working on"
-        />
-        <div className="grid gap-6 sm:grid-cols-2">
-          {featuredProjects.map((project) => (
-            <ProjectCard key={project._id} project={project} />
+      {/* Latest Posts */}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <p className="mb-8 text-xs uppercase tracking-[0.2em] text-text-secondary">
+          Latest Posts
+        </p>
+        <div className="border-t border-border">
+          {posts.map((post) => (
+            <Link
+              key={post._id}
+              href={`/blog/${post.slug}`}
+              className="group flex items-baseline justify-between border-b border-border py-4 transition-colors hover:text-accent"
+            >
+              <span className="text-sm font-medium">{post.title}</span>
+              <time className="shrink-0 text-xs text-text-secondary">
+                {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </time>
+            </Link>
           ))}
         </div>
       </section>
