@@ -1,0 +1,38 @@
+I first learned about programming when I built a mini project in Arduino with my brother-in-law Josh Greaves. 
+This is really what got me into creating projects because I really enjoyed creating something that other people could use and something that could be interactive and have a large impact on other people. 
+
+Then I arrived at BYU my freshman year and studied computer science. I had my first class with Dr. Nancy Fulda, learning C++. There I added to my skill set and really fell in love with programming, debugging, etc. 
+
+Then I served a two-year mission in Vietnam. There I took a two-year break from coding. 
+
+Coming back to BYU, I was more excited to code than ever, especially with the development of large language models. 
+
+I first started learning React and bought an online course by Mosh. 
+
+Started learning basic front-end development, and after using CSS and HTML, I realized that I didn't like it as much as I thought. 
+
+Then I learned more about back-end programming with more course work as I entered my sophomore year of college. 
+
+I wanted to try and get a web development job, so I applied for one at BYU at the College of Humanities. 
+I was super prepared, wore a nice shirt and tie, and practiced my interview skills and showed them a personal website I had built. 
+They were offering me $10 an hour, and I was later rejected. But this is important because I felt like I could do better and find other opportunities for myself. 
+
+This led me to talking to different lawyers in the Provo area and meeting Jake Gunter. 
+After a few short meetings, he gave me a chance, and I was their lead web developer for Howard Lewis and Peterson, Gunter Injury Law, and Provo Criminal Defense. 
+This was huge because I got to learn to program in PHP for real-world applications. I got to learn about SEO and optimizing websites for speed. 
+This later snowballed into my first computer science internship of my sophomore summer. 
+
+My sophomore year I took awesome classes like CS235 and CS240 for software design Learning Java, TypeScript. 
+
+Using my experience from the law firm, I was able to land an internship at a company associated with Twitch called BLERP. 
+There I met Aaron Hsu and Derek OMORI. And was able to learn a ton from them. 
+Worked with GraphQL, JavaScript, and building real data pipelines that affected streamers. 
+What a great learning experience, and I'm super grateful for them to give me a chance. 
+
+Then these experiences led to me getting a machine learning internship in San Francisco with Martian. 
+There on the ML team, I helped build data pipelines to replicate popular benchmarking papers. 
+This included human eval, MBPP, ARK-AGI, I got to learn from really cracked engineers from Google Deepmind, Telcoin, Meta, Snorkel, and the University of Pennsylvania. 
+I learned more about working hard, pushing myself, and seeing what high-quality production code looked like. 
+
+After finishing my internship, I returned to school, starting my junior year, and was able to become a research assistant in Dr. David Wingate's PCCL lab. 
+This is my current position, and I am currently working on a WhatsApp LLM integration and a project called EVO. 
