@@ -83,8 +83,8 @@ const timeline: { year: string; event: string; Icon: LucideIcon }[] = [
 
 export default function AboutPage() {
   return (
-    <>
-      <section className="grid gap-10 md:grid-cols-[1fr_2fr] max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl px-4 py-8 md:px-6 md:py-12">
+      <section className="grid gap-10 md:grid-cols-[1fr_2fr]">
         {/* Photo */}
         <div className="relative aspect-square overflow-hidden rounded-xl">
           <Image
@@ -114,7 +114,7 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="mt-16 max-w-2xl mx-auto">
+      <section className="mt-16">
         <h3 className="mb-6 font-serif text-2xl font-bold">Timeline</h3>
         <ol className="space-y-6 border-l-2 border-border pl-6">
           {timeline.map((item) => (
@@ -130,6 +130,6 @@ export default function AboutPage() {
           ))}
         </ol>
       </section>
-    </>
+    </div>
   );
 }

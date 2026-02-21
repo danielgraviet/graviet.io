@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   },
   description:
     "Personal website and blog — thoughts on web development, projects, and more.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +32,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <Navbar />
-        <main className="min-h-[calc(100vh-8rem)]">
+        <main className="min-h-[calc(100vh-8rem)] pb-24">
           {children}
         </main>
         <Footer />
