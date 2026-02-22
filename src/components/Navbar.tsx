@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { Home } from "lucide-react";
+import { Home, User, BookOpen, FolderOpen, Mail } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const links: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: "/", label: "Home", Icon: Home },
+  { href: "/about", label: "About", Icon: User },
+  { href: "/blog", label: "Blog", Icon: BookOpen },
+  { href: "/projects", label: "Projects", Icon: FolderOpen },
+  { href: "/contact", label: "Contact", Icon: Mail },
+];
 
 export default function Navbar() {
   return (
@@ -7,25 +16,30 @@ export default function Navbar() {
       {/* Top bar — logo only */}
       <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-3 md:px-6">
-          <Link
-            href="/"
-            className="text-lg font-black uppercase tracking-wide transition-opacity hover:opacity-60"
-          >
+          <Link href="/" className="text-lg font-black uppercase tracking-wide">
             GRAVIET
           </Link>
         </div>
       </header>
 
-      {/* Bottom home button */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-6">
-        <Link
-          href="/"
-          aria-label="Home"
-          className="flex items-center justify-center rounded-full border border-border bg-background/90 p-3 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-foreground"
-        >
-          <Home className="h-5 w-5" />
-        </Link>
-      </div>
+      {/* Bottom navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/90 backdrop-blur-sm">
+        <ul className="mx-auto flex max-w-md items-center justify-around px-2 py-1">
+          {links.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="flex flex-col items-center gap-1 px-4 py-2.5 text-text-secondary transition-colors hover:text-foreground"
+              >
+                <link.Icon className="h-6 w-6" />
+                <span className="text-[10px] font-medium uppercase tracking-wide">
+                  {link.label}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </>
   );
 }
