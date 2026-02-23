@@ -18,7 +18,7 @@ const gridItems: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/contact", label: "Contact", Icon: Mail },
   { href: "/projects", label: "Projects", Icon: FolderOpen },
   { href: "/blog", label: "Blog", Icon: BookOpen },
-  { href: "/resume", label: "Resume", Icon: FileText },
+  { href: "/resume.pdf", label: "Resume", Icon: FileText },
   { href: "/library", label: "Library", Icon: Library },
   { href: "/tools", label: "Tools", Icon: Wrench },
   { href: "/lifestyle", label: "Lifestyle", Icon: Heart },
