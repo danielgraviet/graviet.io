@@ -13,6 +13,7 @@ const sections: {
     heading: "Hardware",
     items: [
       { name: "MacBook Pro M3", description: "Primary machine for everything." },
+      { name: "HomePC", description: "My homebuilt PC. RTX 3090, 64GB RAM. Linux Mint." },
       { name: "iPhone 15 Pro", description: "Daily driver." },
       { name: "AirPods Pro", description: "Noise cancellation for deep work sessions." },
     ],
@@ -20,12 +21,9 @@ const sections: {
   {
     heading: "Development",
     items: [
-      { name: "VS Code", description: "Editor of choice with Vim keybindings." },
-      { name: "iTerm2 + Zsh", description: "Terminal setup with Oh My Zsh." },
+      { name: "VS Code", description: "Editor of choice with Claude Code CLI" },
+      { name: "Alacritty", description: "Used to be Warp, but went for CPU friendly terminal." },
       { name: "Claude Code", description: "AI coding assistant built into the terminal." },
-      { name: "Cursor", description: "AI-native editor for heavier refactoring tasks." },
-      { name: "Postman", description: "API testing and documentation." },
-      { name: "TablePlus", description: "Database GUI for Postgres and MySQL." },
     ],
   },
   {
@@ -34,7 +32,6 @@ const sections: {
       { name: "Next.js", description: "Go-to framework for web apps and this site." },
       { name: "TypeScript", description: "Strongly typed JavaScript everywhere." },
       { name: "Tailwind CSS", description: "Utility-first styling." },
-      { name: "Sanity", description: "CMS powering this site's content." },
       { name: "Vercel", description: "Deployment and hosting." },
     ],
   },
@@ -42,9 +39,7 @@ const sections: {
     heading: "Apps & Services",
     items: [
       { name: "Notion", description: "Notes, projects, and long-form thinking." },
-      { name: "Raycast", description: "Replaced Spotlight — launcher, clipboard, snippets." },
-      { name: "Arc", description: "Browser of choice." },
-      { name: "Linear", description: "Issue tracking for personal projects." },
+      { name: "Safari", description: "Browser of choice. CPU efficient and optimized for Mac hardware." },
     ],
   },
 ];

@@ -97,22 +97,24 @@ export default function AboutPage() {
 
         <div className="space-y-4 leading-relaxed text-text-secondary">
           <p>
-  Thanks for visiting my website. I'm a CS student at BYU interested in the systems
-  side of machine learning. Specifically how frontier models are built, served, and
-  made faster in production.
-</p>
-<p>
-  I got here by trying a lot of things first. Early on I built with PHP, did some SEO,
-  learned frontend, picked up GraphQL, and messed around with Arduino projects. That
-  breadth eventually pointed me toward what really interests me: understanding
-  what's happening underneath the abstraction.
-</p>
-<p>
-  Right now I'm focused on ML infrastructure. Things like CPU/GPU optimization, inference efficiency,
-  and the systems that make models work at scale. I've found that the most
-  interesting problems for me are between how a model is built and how it runs.
-  Still learning, but that's the niche I'm going deep on.
-</p>
+            Thanks for visiting my website. I'm a CS student at BYU interested
+            in the systems side of machine learning. Specifically how frontier
+            models are built, served, and made faster in production.
+          </p>
+          <p>
+            I got here by trying a lot of things first. Early on I built with
+            PHP, did some SEO, learned frontend, picked up GraphQL, and messed
+            around with Arduino projects. That breadth eventually pointed me
+            toward what really interests me: understanding what's happening
+            underneath the abstraction.
+          </p>
+          <p>
+            Right now I'm focused on ML infrastructure. Things like CPU/GPU
+            optimization, inference efficiency, and the systems that make models
+            work at scale. I've found that the most interesting problems for me
+            are between how a model is built and how it runs. Still learning,
+            but that's the niche I'm going deep on.
+          </p>
         </div>
       </section>
 
