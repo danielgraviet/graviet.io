@@ -24,7 +24,7 @@ const interests: { Icon: LucideIcon; label: string; description: string }[] = [
     Icon: Music,
     label: "Music",
     description:
-      "Rain sounds for focus is underrated. You should definitely try it if you haven&apos;t.",
+      "Rain sounds for focus is underrated. You should definitely try it if you haven't.",
   },
   {
     Icon: Sun,
