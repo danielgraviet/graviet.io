@@ -1,0 +1,52 @@
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import { remark } from "remark";
+import html from "remark-html";
+import type { Post } from "./types";
+
+const postsDir = path.join(process.cwd(), "content/posts");
+
+function getPostFiles(): string[] {
+  if (!fs.existsSync(postsDir)) return [];
+  return fs.readdirSync(postsDir).filter((f) => f.endsWith(".md"));
+}
+
+function parsePost(filename: string, includeBody = false): Post {
+  const raw = fs.readFileSync(path.join(postsDir, filename), "utf8");
+  const { data, content } = matter(raw);
+  return {
+    _id: filename.replace(/\.md$/, ""),
+    title: data.title,
+    slug: data.slug ?? filename.replace(/\.md$/, ""),
+    excerpt: data.excerpt ?? "",
+    publishedAt: data.publishedAt ? String(data.publishedAt) : "",
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    body: includeBody ? content : undefined,
+  };
+}
+
+export async function getAllPosts(): Promise<Post[]> {
+  return getPostFiles()
+    .map((f) => parsePost(f))
+    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
+}
+
+export async function getLatestPosts(count = 3): Promise<Post[]> {
+  return (await getAllPosts()).slice(0, count);
+}
+
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const file = getPostFiles().find((f) => {
+    const { data } = matter(fs.readFileSync(path.join(postsDir, f), "utf8"));
+    return (data.slug ?? f.replace(/\.md$/, "")) === slug;
+  });
+  if (!file) return null;
+  const post = parsePost(file, true);
+  const processed = await remark().use(html).process(post.body as string);
+  return { ...post, body: processed.toString() };
+}
+
+export async function getAllSlugs(): Promise<string[]> {
+  return (await getAllPosts()).map((p) => p.slug);
+}

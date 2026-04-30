@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import SectionHeading from "@/components/SectionHeading";
 import BlogCard from "@/components/BlogCard";
-import { getAllPosts } from "@/lib/sanity.queries";
+import { getAllPosts } from "@/lib/posts";
 
 export const revalidate = 3600;
 

@@ -5,7 +5,7 @@ export interface Post {
   excerpt: string;
   publishedAt: string;
   tags: string[];
-  body?: unknown[];
+  body?: string;
 }
 
 export interface Project {

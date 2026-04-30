@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllSlugs } from "@/lib/sanity.queries";
-import PortableTextRenderer from "@/components/PortableTextRenderer";
+import { getPostBySlug, getAllSlugs } from "@/lib/posts";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -60,7 +60,7 @@ export default async function BlogPostPage({
         </div>
       </header>
 
-      {post.body && <PortableTextRenderer value={post.body} />}
+      {post.body && <MarkdownRenderer html={post.body} />}
     </article>
   );
 }
