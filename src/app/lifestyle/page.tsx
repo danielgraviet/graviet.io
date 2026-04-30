@@ -12,37 +12,25 @@ const interests: { Icon: LucideIcon; label: string; description: string }[] = [
     Icon: Dumbbell,
     label: "Fitness",
     description:
-      "Consistent gym routine — strength training most mornings. Movement is the best thing I do for focus and mood.",
+      "Fan of the gym. I've seen it help a lot with focus and mood.",
   },
   {
     Icon: BookOpen,
     label: "Reading",
     description:
-      "Books on technology, philosophy, and business. I try to read something every day, even if only for 15 minutes.",
-  },
-  {
-    Icon: Utensils,
-    label: "Food",
-    description:
-      "I love trying new restaurants and cooking at home. Particularly into anything with bold flavors — Vietnamese, Korean, Mexican.",
-  },
-  {
-    Icon: Plane,
-    label: "Travel",
-    description:
-      "Spent two years living in Vietnam and it permanently changed how I see the world. Always looking for the next trip.",
+      "Books on technology, philosophy, and business. I try to read something every day.",
   },
   {
     Icon: Music,
     label: "Music",
     description:
-      "Mostly ambient and lo-fi for focus, hip-hop for everything else. Always open to recommendations.",
+      "Rain sounds for focus is underrated. You should definitely try it if you haven&apos;t.",
   },
   {
     Icon: Sun,
     label: "Morning Routine",
     description:
-      "Early riser. Most of my best thinking and deep work happens before 9am. Coffee, no phone, get to it.",
+      "I do like the mornings. I feel the best when I start the day of strong.",
   },
 ];
 
