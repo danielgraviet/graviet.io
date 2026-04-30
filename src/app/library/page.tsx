@@ -13,9 +13,9 @@ const sections: {
     heading: "Currently Reading",
     books: [
       {
-        title: "The Pragmatic Programmer",
-        author: "David Thomas & Andrew Hunt",
-        note: "Timeless advice on writing better software.",
+        title: "Project Hail Mary",
+        author: "Andy Weir",
+        note: "A great sci-fi novel with a lot of science and humor.",
       },
     ],
   },
@@ -33,13 +33,14 @@ const sections: {
         note: "Why focused work is the real competitive advantage.",
       },
       {
-        title: "The Almanack of Naval Ravikant",
-        author: "Eric Jorgenson",
-        note: "Wealth, health, and happiness distilled.",
+        title: "Essentialism",
+        author: "Greg McKeown",
+        note: "Focusing on the essential and eliminating the non-essential.",
       },
       {
         title: "Atomic Habits",
         author: "James Clear",
+        note: "Small changes, big results.",
       },
     ],
   },
