@@ -9,6 +9,30 @@ export const metadata: Metadata = {
 
 const projects: Project[] = [
   {
+    _id: "topprompt",
+    title: "TopPrompt",
+    description:
+      "A platform for developers to discover, rank, and share battle-tested AI prompts. Engineered as a Turborepo monorepo featuring a Next.js web application and a Plasmo Chrome extension, powered by PostgreSQL and Drizzle ORM.",
+    tags: ["Next.js", "TypeScript", "PostgreSQL", "Plasmo", "Turborepo"],
+    featured: true,
+  },
+  {
+    _id: "ohsheet",
+    title: "OhSheet",
+    description:
+      "An automation service that synchronizes upcoming Canvas assignments into a single, collaborative Google Sheet. Powered by a Python/FastAPI backend with Redis, and features a React/Vite frontend for streamlined setup.",
+    tags: ["Python", "FastAPI", "React", "Redis", "Google Sheets API"],
+    featured: true,
+  },
+  {
+    _id: "thread-pool",
+    title: "Thread Pool Management System",
+    description:
+      "A custom C++20 thread pool implementation built from scratch as a systems programming learning project. Features a thread-safe task queue, worker thread management, and concurrent execution using modern concurrency primitives.",
+    tags: ["C++20", "CMake", "Concurrency", "Systems Programming"],
+    featured: true,
+  },
+  {
     _id: "helix",
     title: "Helix",
     description:
