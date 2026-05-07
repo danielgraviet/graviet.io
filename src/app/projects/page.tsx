@@ -8,6 +8,14 @@ export const metadata: Metadata = {
 };
 
 const projects: Project[] = [
+    {
+    _id: "annex",
+    title: "Annex",
+    description:
+      "A validation landing page for a curated network of extraordinary industrial and commercial workspaces. Annex helps startups and growing businesses discover flexible space inside hangars, warehouses, workshops, and industrial campuses built for teams doing real work.",
+    tags: ["Next.js", "TypeScript", "Tailwind CSS", "Landing Page", "Marketplace"],
+    featured: true,
+  },
   {
     _id: "topprompt",
     title: "TopPrompt",
