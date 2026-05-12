@@ -12,8 +12,9 @@ Personal portfolio and blog site.
 
 ## Project Structure
 
-```
+``` 
 content/
+├── ideas/             # Essay ideas, outlines, and partial drafts
 └── posts/             # File-based markdown blog posts
 src/
 ├── app/
@@ -54,6 +55,49 @@ Open [http://localhost:3000](http://localhost:3000) to view the site, or [http:/
 | `bun build`   | Build for production     |
 | `bun start`   | Start production server  |
 | `bun lint`    | Run ESLint               |
+
+## Essay Idea Pipeline
+
+Use `content/ideas/` to track essay titles you have not started, partially started, or are actively drafting. The goal is to keep idea capture lightweight while making it easy for a coding agent to turn an idea file into a publishable post later.
+
+The workflow is:
+
+1. Create one markdown file per essay idea in `content/ideas/`.
+2. Use frontmatter to track the idea title, slug, status, dates, tags, and a short summary.
+3. Use the body for rough notes, outline bullets, fragments, quotes, or partial draft text.
+4. Update the `status` field as the idea matures:
+   - `idea`
+   - `outline`
+   - `drafting`
+   - `ready`
+   - `published`
+5. When a piece is ready to become a blog post, have the agent promote it into `content/posts/`, preserve your content, improve markdown formatting, and generate complete publish metadata.
+
+The default shape for an idea file is:
+
+```md
+---
+title: Why Verification Is the Real Bottleneck for Long-Horizon AI
+slug: verification-bottleneck-long-horizon-ai
+status: idea
+createdAt: 2026-05-12
+updatedAt: 2026-05-12
+tags: [AI, RL, Verification]
+summary: Notes toward an essay on why progress stalls when substeps are hard to verify.
+---
+
+## Thesis
+
+The real bottleneck is not horizon length by itself. It is horizon length without cheap verification.
+
+## Notes
+
+- RLVR works in math and code because truth is mechanically checkable
+- Long-horizon autonomy fails when evaluation is expensive
+- This may explain uneven progress across domains
+```
+
+Agents should treat idea files as working material rather than published posts. They should not overwrite your ideas with polished prose unless asked. Their job is to help you preserve, structure, extend, and eventually promote those drafts into `content/posts/`.
 
 ## Adding Blog Posts From Raw Markdown
 
@@ -116,3 +160,4 @@ Use [`content/posts/hello-world.md`](/Users/danielgraviet/Desktop/projects/gravi
 - Posts are sorted by `publishedAt` descending.
 - Only `.md` files are loaded right now; `.mdx` is not part of this pipeline.
 - If raw content needs custom embeds or richer rendering, update the markdown pipeline in `src/lib/posts.ts` and the renderer before relying on that syntax.
+- Idea files belong in `content/ideas/`; published posts belong in `content/posts/`.
