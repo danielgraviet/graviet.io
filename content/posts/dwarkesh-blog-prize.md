@@ -1,3 +1,11 @@
+---
+title: What Longer-Timeline Intuitions About RL Progress Missed
+slug: dwarkesh-blog-prize
+excerpt: An argument for why AI progress did not slow in the RL regime as much as some longer-timeline intuitions expected.
+publishedAt: 2026-05-12
+tags: [AI, RL, Forecasting]
+---
+
 ## Question
 
 > “A couple years ago, there was this idea that AI progress might slow down as we make further progress into the RL regime.
