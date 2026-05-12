@@ -68,7 +68,7 @@ For a coding agent, the workflow should be:
    - Convert loose notes into standard markdown paragraphs and bullet lists.
    - Clean up spacing, code fences, and links.
    - Remove unsupported or messy constructs unless the renderer is explicitly extended to support them.
-3. Add YAML frontmatter at the top of the file using this exact shape:
+3. Always add YAML frontmatter at the top of the file. Do not leave metadata blank or omit it. The agent should generate relevant metadata from the essay itself using this exact shape:
 
 ```md
 ---
@@ -80,15 +80,24 @@ tags: [AI, Writing]
 ---
 ```
 
-4. Keep these fields valid because the current loader expects them:
-   - `title`: required
-   - `slug`: recommended and should match the URL segment
-   - `excerpt`: recommended and used on blog cards and metadata
-   - `publishedAt`: required in ISO-like date form `YYYY-MM-DD`
-   - `tags`: array of short strings
-5. Preserve body content as plain markdown. The site converts markdown to HTML with `remark` and renders it through [`src/components/MarkdownRenderer.tsx`](/Users/danielgraviet/Desktop/projects/graviet.io/src/components/MarkdownRenderer.tsx).
-6. Do not add any manual route registration for normal posts. In the current architecture, discovery is automatic from the files in `content/posts/`.
-7. Verify the result:
+4. Generate these fields intentionally because the current loader and blog UI expect them:
+   - `title`: required; create a clear, publication-ready title that reflects the actual argument of the post
+   - `slug`: required in practice; use a lowercase, hyphenated URL slug that matches the filename
+   - `excerpt`: required in practice; write a concise 1-2 sentence summary that will appear on the blog card and in metadata
+   - `publishedAt`: required; set the publish date in `YYYY-MM-DD` form
+   - `tags`: required in practice; add a short array of relevant tags based on the post topic
+5. When generating metadata, the agent should:
+   - infer a strong title from the essay rather than copying a weak placeholder
+   - choose a slug that is stable, descriptive, and URL-safe
+   - write an excerpt that summarizes the actual thesis or topic of the piece
+   - set `publishedAt` to the intended publish date
+   - choose tags that are specific to the subject matter, not generic filler
+6. Preserve body content as plain markdown. The site converts markdown to HTML with `remark` and renders it through [`src/components/MarkdownRenderer.tsx`](/Users/danielgraviet/Desktop/projects/graviet.io/src/components/MarkdownRenderer.tsx).
+7. Do not add any manual route registration for normal posts. In the current architecture, discovery is automatic from the files in `content/posts/`.
+8. Before finishing, confirm the post has both:
+   - well-structured markdown body formatting
+   - complete frontmatter with `title`, `slug`, `excerpt`, `publishedAt`, and `tags`
+9. Verify the result:
    - Run `bun lint`
    - Run `bun dev`
    - Check the post appears on `/blog`
@@ -102,7 +111,8 @@ Use [`content/posts/hello-world.md`](/Users/danielgraviet/Desktop/projects/gravi
 ### Notes For Agents
 
 - The filename should generally match the slug: `my-new-post.md` -> `slug: my-new-post`.
-- If `slug` is omitted, the loader falls back to the filename, but agents should still set it explicitly.
+- Even though the loader can fall back to the filename, agents should still always set `slug` explicitly.
+- Agents should always provide `title`, `slug`, `excerpt`, `publishedAt`, and `tags` for every post they add or format.
 - Posts are sorted by `publishedAt` descending.
 - Only `.md` files are loaded right now; `.mdx` is not part of this pipeline.
 - If raw content needs custom embeds or richer rendering, update the markdown pipeline in `src/lib/posts.ts` and the renderer before relying on that syntax.
