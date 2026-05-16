@@ -41,7 +41,9 @@ Over three iterations, both the instruction-following ability and the judging ab
 
 This reframe makes total effective progress looks like
 
-`(compute × scaling-exponent factor) + (compute × post-training factor) + (compute × verification factor)`
+$$
+\text{progress} = (\text{compute} \times \alpha_{\text{scale}}) + (\text{compute} \times \alpha_{\text{post}}) + (\text{compute} \times \alpha_{\text{verify}})
+$$
 
 than to compute + algorithms. The same FLOP increase is being amplified across three independent multiplicative channels simultaneously. That's why the o3-to-frontier-2026 window produced larger capability jumps than 2023 forecasts predicted despite no further OOMs of RL compute: the OOMs weren't necessary. To slow progress, you'd need to hit ceilings on all three channels at once, and there's no particular reason to expect them to stop at the same time.
 

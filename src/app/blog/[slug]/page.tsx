@@ -36,7 +36,7 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl">
+    <article className="mx-auto max-w-2xl px-4 md:px-6">
       <header className="mb-8">
         <time className="text-sm text-text-secondary">
           {new Date(post.publishedAt).toLocaleDateString("en-US", {

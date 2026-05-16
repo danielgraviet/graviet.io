@@ -103,3 +103,36 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
+
+/* rehype-pretty-code */
+.markdown-body [data-rehype-pretty-code-figure] pre {
+  background: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.markdown-body [data-rehype-pretty-code-figure] code {
+  background: none;
+  padding: 0;
+  font-size: 0.875em;
+  counter-reset: line;
+}
+
+.markdown-body [data-rehype-pretty-code-figure] [data-line] {
+  padding: 0 0.25rem;
+}
+
+.markdown-body [data-rehype-pretty-code-figure] [data-highlighted-line] {
+  background: rgba(0, 0, 0, 0.06);
+  border-left: 2px solid var(--accent);
+  padding-left: calc(0.25rem - 2px);
+}
+
+/* KaTeX display math centering */
+.markdown-body .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}

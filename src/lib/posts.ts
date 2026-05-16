@@ -1,8 +1,13 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { remark } from "remark";
-import html from "remark-html";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkMath from "remark-math";
+import remarkRehype from "remark-rehype";
+import rehypeKatex from "rehype-katex";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeStringify from "rehype-stringify";
 import type { Post } from "./types";
 
 const postsDir = path.join(process.cwd(), "content/posts");
@@ -43,7 +48,14 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   });
   if (!file) return null;
   const post = parsePost(file, true);
-  const processed = await remark().use(html).process(post.body as string);
+  const processed = await unified()
+    .use(remarkParse)
+    .use(remarkMath)
+    .use(remarkRehype)
+    .use(rehypeKatex)
+    .use(rehypePrettyCode, { theme: "github-light" })
+    .use(rehypeStringify)
+    .process(post.body as string);
   return { ...post, body: processed.toString() };
 }
 
