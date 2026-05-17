@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Spline from "@splinetool/react-spline/next";
+import NoScroll from "@/components/NoScroll";
 import {
   Home as HomeIcon,
   User,
@@ -26,8 +28,12 @@ const gridItems: { href: string; label: string; Icon: LucideIcon }[] = [
 
 export default function Home() {
   return (
-    <section className="flex h-[calc(100vh-5rem)] items-center justify-center px-6 pb-20">
-      <div className="grid w-full max-w-xs grid-cols-3 gap-3">
+    <section className="relative flex h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-6 pb-20">
+      <NoScroll />
+      <div className="fixed -inset-24 z-0">
+        <Spline scene="https://prod.spline.design/bBIZB7uRZkRpkmlC/scene.splinecode" />
+      </div>
+      <div className="relative z-10 grid w-full max-w-xs grid-cols-3 gap-3">
         {gridItems.map(({ href, label, Icon }) => (
           <Link
             key={label}
