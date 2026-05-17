@@ -8,6 +8,8 @@
   --border: #e5e5e5;
   --text-secondary: #777;
   --font-inter: "Inter", system-ui, sans-serif;
+  --font-body: "Chillax", system-ui, sans-serif;
+  --font-display: "Array", system-ui, sans-serif;
 }
 
 @theme inline {
@@ -17,7 +19,8 @@
   --color-accent: var(--accent);
   --color-border: var(--border);
   --color-text-secondary: var(--text-secondary);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
 html {
@@ -27,17 +30,15 @@ html {
 .markdown-body h2 {
   margin-top: 2rem;
   margin-bottom: 1rem;
-  font-family: var(--font-serif, serif);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .markdown-body h3 {
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
-  font-family: var(--font-serif, serif);
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .markdown-body p {
@@ -101,7 +102,12 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
 }
 
 /* rehype-pretty-code */

@@ -45,7 +45,7 @@ export default async function BlogPostPage({
             day: "numeric",
           })}
         </time>
-        <h1 className="mt-2 font-serif text-4xl font-bold leading-tight">
+        <h1 className="mt-2 text-4xl leading-tight">
           {post.title}
         </h1>
         <div className="mt-4 flex flex-wrap gap-2">

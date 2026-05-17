@@ -120,7 +120,7 @@ export default function AboutPage() {
 
       {/* Timeline */}
       <section className="mt-16">
-        <h3 className="mb-6 font-serif text-2xl font-bold">Timeline</h3>
+        <h3 className="mb-6 text-2xl">Timeline</h3>
         <ol className="space-y-6 border-l-2 border-border pl-6">
           {timeline.map((item) => (
             <li key={item.year} className="relative">
