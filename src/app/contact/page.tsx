@@ -69,8 +69,8 @@ export default function ContactPage() {
               {link.icon}
             </span>
             <div>
-              <span className="text-sm font-semibold">{link.label}</span>
-              <p className="text-xs text-text-secondary">
+              <span className="text-base font-semibold">{link.label}</span>
+              <p className="text-sm leading-relaxed text-text-secondary">
                 {link.description}
               </p>
             </div>

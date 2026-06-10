@@ -17,6 +17,11 @@ function getPostFiles(): string[] {
   return fs.readdirSync(postsDir).filter((f) => f.endsWith(".md"));
 }
 
+function normalizeDate(value: unknown): string {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return value ? String(value) : "";
+}
+
 function parsePost(filename: string, includeBody = false): Post {
   const raw = fs.readFileSync(path.join(postsDir, filename), "utf8");
   const { data, content } = matter(raw);
@@ -25,16 +30,21 @@ function parsePost(filename: string, includeBody = false): Post {
     title: data.title,
     slug: data.slug ?? filename.replace(/\.md$/, ""),
     excerpt: data.excerpt ?? "",
-    publishedAt: data.publishedAt ? String(data.publishedAt) : "",
+    publishedAt: normalizeDate(data.publishedAt),
     tags: Array.isArray(data.tags) ? data.tags : [],
     body: includeBody ? content : undefined,
   };
 }
 
+function getPublishedTime(post: Post): number {
+  const time = Date.parse(post.publishedAt);
+  return Number.isNaN(time) ? 0 : time;
+}
+
 export async function getAllPosts(): Promise<Post[]> {
   return getPostFiles()
     .map((f) => parsePost(f))
-    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
+    .sort((a, b) => getPublishedTime(b) - getPublishedTime(a));
 }
 
 export async function getLatestPosts(count = 3): Promise<Post[]> {

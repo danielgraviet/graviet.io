@@ -9,7 +9,7 @@ export default function Navbar() {
         <div className="mx-auto max-w-6xl px-4 py-3 md:px-6">
           <Link
             href="/"
-            className="font-display text-3xl font-bold uppercase tracking-wide transition-opacity hover:opacity-60"
+            className="font-display text-3xl font-bold uppercase transition-opacity hover:opacity-60"
           >
             GRAVIET
           </Link>

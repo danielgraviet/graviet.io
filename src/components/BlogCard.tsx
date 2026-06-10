@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/types";
+import { formatPostDate } from "@/lib/dates";
 
 export default function BlogCard({ post }: { post: Post }) {
   return (
@@ -8,11 +9,7 @@ export default function BlogCard({ post }: { post: Post }) {
       className="group block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-md"
     >
       <time className="text-sm text-text-secondary">
-        {new Date(post.publishedAt).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
+        {formatPostDate(post.publishedAt)}
       </time>
       <h3 className="mt-2 text-xl group-hover:text-accent">
         {post.title}

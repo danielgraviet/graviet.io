@@ -41,7 +41,7 @@ export default function Home() {
             className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background/60 py-6 text-text-secondary backdrop-blur-sm transition-colors hover:border-foreground/30 hover:text-foreground"
           >
             <Icon className="h-6 w-6" />
-            <span className="text-[10px] font-medium uppercase tracking-wide">
+            <span className="text-xs font-semibold">
               {label}
             </span>
           </Link>

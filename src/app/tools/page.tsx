@@ -51,7 +51,7 @@ export default function ToolsPage() {
       <div className="space-y-12">
         {sections.map((section) => (
           <div key={section.heading}>
-            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-text-secondary">
+            <p className="mb-4 text-sm font-semibold text-text-secondary">
               {section.heading}
             </p>
             <div className="border-t border-border">
@@ -60,8 +60,8 @@ export default function ToolsPage() {
                   key={item.name}
                   className="flex flex-col gap-0.5 border-b border-border py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
                 >
-                  <span className="shrink-0 text-sm font-semibold">{item.name}</span>
-                  <span className="text-xs text-text-secondary">{item.description}</span>
+                  <span className="shrink-0 text-base font-semibold">{item.name}</span>
+                  <span className="text-sm leading-relaxed text-text-secondary">{item.description}</span>
                 </div>
               ))}
             </div>

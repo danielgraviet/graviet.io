@@ -61,7 +61,7 @@ export default function LibraryPage() {
       <div className="space-y-12">
         {sections.map((section) => (
           <div key={section.heading}>
-            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-text-secondary">
+            <p className="mb-4 text-sm font-semibold text-text-secondary">
               {section.heading}
             </p>
             <div className="border-t border-border">
@@ -70,10 +70,10 @@ export default function LibraryPage() {
                   key={book.title}
                   className="flex flex-col gap-0.5 border-b border-border py-4"
                 >
-                  <span className="text-sm font-semibold">{book.title}</span>
-                  <span className="text-xs text-text-secondary">{book.author}</span>
+                  <span className="text-base font-semibold">{book.title}</span>
+                  <span className="text-sm text-text-secondary">{book.author}</span>
                   {book.note && (
-                    <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                    <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                       {book.note}
                     </p>
                   )}

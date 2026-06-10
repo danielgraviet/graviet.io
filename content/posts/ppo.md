@@ -2,6 +2,7 @@
 title: PPO Explain for beginners
 slug: ppo-explain-for-beginners
 createdAt: 2026-05-12
+publishedAt: 2026-05-03
 updatedAt: 2026-05-16
 tags: [AI, RL, MachineLearning, GPU]
 summary: A beginner-friendly breakdown of Proximal Policy Optimization — the RL algorithm that turned raw base models into useful AI assistants. Covers the core stability intuition, the clipped surrogate objective, and why running an Actor and Critic simultaneously pushes your GPU to its limits.

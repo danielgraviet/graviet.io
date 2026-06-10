@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getAllSlugs } from "@/lib/posts";
+import { formatPostDate } from "@/lib/dates";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export const revalidate = 3600;
@@ -39,13 +40,9 @@ export default async function BlogPostPage({
     <article className="mx-auto max-w-2xl px-4 md:px-6">
       <header className="mb-8">
         <time className="text-sm text-text-secondary">
-          {new Date(post.publishedAt).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
+          {formatPostDate(post.publishedAt)}
         </time>
-        <h1 className="mt-2 text-4xl leading-tight">
+        <h1 className="mt-2 text-3xl leading-tight md:text-4xl">
           {post.title}
         </h1>
         <div className="mt-4 flex flex-wrap gap-2">

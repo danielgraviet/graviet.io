@@ -13,11 +13,11 @@ export default function ProjectRow({ project }: { project: Project }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-baseline justify-between">
-        <h3 className="text-3xl tracking-tight transition-colors group-hover:text-accent md:text-5xl">
+        <h3 className="text-3xl transition-colors group-hover:text-accent md:text-5xl">
           {project.title}
         </h3>
         {project.url && (
-          <span className="text-xs uppercase tracking-[0.15em] text-text-secondary transition-opacity group-hover:opacity-100 opacity-0">
+          <span className="text-sm font-medium text-text-secondary transition-opacity group-hover:opacity-100 opacity-0">
             View &rarr;
           </span>
         )}
@@ -30,14 +30,14 @@ export default function ProjectRow({ project }: { project: Project }) {
           transform: hovered ? "translateY(0)" : "translateY(-8px)",
         }}
       >
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary">
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-text-secondary">
           {project.description}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {project.tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs uppercase tracking-[0.1em] text-accent"
+              className="text-sm font-medium text-accent"
             >
               {tag}
             </span>
