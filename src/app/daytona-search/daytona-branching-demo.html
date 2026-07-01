@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daytona — Stop starting over</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F5F1;
+    --card:#FFFFFF;
+    --ink:#1E2724;
+    --muted:#5F6B65;
+    --route:#2B59C3;
+    --ok:#0E8A5F;
+    --ok-soft:#E2F2EA;
+    --fail:#D9463E;
+    --fail-soft:#FBE9E7;
+    --flag:#E29B2D;
+    --grid:#DCE3DD;
+    --ghost:#B9C2BC;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:44px 20px 56px}
+
+  /* ---------- header ---------- */
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--flag);display:inline-block;border-radius:2px}
+  h1{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:clamp(30px,5.4vw,52px);line-height:1.06;margin:14px 0 14px;letter-spacing:-.01em}
+  h1 .over{color:var(--muted)}
+  h1 .struck{color:var(--ghost);text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:var(--fail)}
+  h1 .branch{color:var(--ok);white-space:nowrap}
+  .sub{font-size:17px;line-height:1.55;color:var(--muted);max-width:60ch}
+  .sub strong{color:var(--ink);font-weight:600}
+
+  .controls{margin-top:20px;display:flex;align-items:center;gap:14px}
+  button.replay{font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:10px 20px;cursor:pointer;transition:transform .12s ease,background .12s ease}
+  button.replay:hover{background:#000;transform:translateY(-1px)}
+  button.replay:focus-visible{outline:3px solid var(--route);outline-offset:2px}
+  .hint{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+
+  /* ---------- stage ---------- */
+  .stage{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
+  @media(max-width:760px){.stage{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--grid);border-radius:var(--radius);padding:18px 18px 16px;position:relative;overflow:hidden}
+  .panel--new{border-color:#BFDCCD;box-shadow:0 8px 28px -14px rgba(14,138,95,.35)}
+  .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:6px;display:inline-block}
+  .panel--old .tag{background:#EEF1ED;color:var(--muted)}
+  .panel--new .tag{background:var(--ok-soft);color:var(--ok)}
+  .panel h2{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:21px;margin:10px 0 2px}
+  .panel .desc{font-size:13.5px;color:var(--muted)}
+
+  svg.map{width:100%;height:auto;display:block;margin:8px 0 4px}
+  .trail{fill:none;stroke:var(--route);stroke-width:2.6;stroke-linecap:round;opacity:0}
+  .trail.ghosted{stroke:var(--ghost);opacity:.45;transition:stroke .4s,opacity .4s}
+  .trail.won{stroke:var(--ok);transition:stroke .4s}
+  .agent-dot{fill:var(--route);stroke:#fff;stroke-width:2}
+  .agent-dot.gone{opacity:0}
+  .xmark{font:700 13px "IBM Plex Mono",monospace;fill:var(--fail);opacity:0;transition:opacity .25s}
+  .xmark.show{opacity:1}
+  .goal-star{fill:#fff;stroke:var(--ghost);stroke-width:1.6;transition:fill .4s,stroke .4s}
+  .goal-star.lit{fill:var(--flag);stroke:var(--flag)}
+  .goal-ring{fill:none;stroke:var(--ok);stroke-width:2;opacity:0}
+  .maplabel{font:500 10.5px "IBM Plex Mono",monospace;fill:var(--muted);letter-spacing:.06em}
+  .flaggroup{opacity:0;transition:opacity .3s}
+  .flaggroup.show{opacity:1}
+  .savelabel{font:600 10.5px "IBM Plex Mono",monospace;fill:var(--flag);letter-spacing:.05em}
+  .clone-ring{fill:none;stroke:var(--flag);stroke-width:1.6;opacity:0}
+
+  @keyframes ringpop{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(2.2)}}
+  .clone-ring.pop{animation:ringpop .8s ease-out forwards;transform-origin:center;transform-box:fill-box}
+  .goal-ring.pop{animation:ringpop 1s ease-out forwards;transform-origin:center;transform-box:fill-box}
+  @keyframes dotflash{0%,100%{fill:var(--route)}50%{fill:var(--fail)}}
+  .agent-dot.failing{animation:dotflash .5s ease 2}
+
+  /* progress bar */
+  .barwrap{height:10px;background:#EDF0EC;border-radius:99px;overflow:hidden;margin-top:6px;position:relative}
+  .bar{height:100%;width:0%;background:var(--route);border-radius:99px;transition:background .3s}
+  .bar.fail{background:var(--fail)}
+  .bar.saved{background:linear-gradient(90deg,var(--flag) 0 62%,var(--route) 62%)}
+  .bar.done{background:var(--ok)}
+  .barnote{position:absolute;right:8px;top:-1px;font:600 9.5px "IBM Plex Mono",monospace;color:var(--flag);opacity:0;transition:opacity .3s;line-height:12px}
+  .barnote.show{opacity:1}
+
+  .stats{display:flex;justify-content:space-between;gap:10px;margin-top:12px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+  .stats b{color:var(--ink);font-weight:500}
+  .stats .bad b{color:var(--fail)}
+  .stats .good b{color:var(--ok)}
+
+  .status{margin-top:10px;font-size:13px;font-weight:600;min-height:20px}
+  .status.searching{color:var(--muted)}
+  .status.searching::after{content:"…";animation:dots 1.2s steps(4,end) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  .status.saved{color:var(--flag)}
+  .status.solved{color:var(--ok)}
+  .badge{display:none;position:absolute;top:16px;right:16px;background:var(--ok);color:#fff;font:600 12px "Instrument Sans",sans-serif;padding:6px 12px;border-radius:999px}
+  .badge.show{display:block;animation:badgein .4s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes badgein{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* ---------- banner ---------- */
+  .banner{margin-top:22px;background:var(--ink);color:#F4F6F2;border-radius:var(--radius);padding:22px 26px;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease}
+  .banner.show{opacity:1;transform:none}
+  .banner h3{font-family:"Bricolage Grotesque",Georgia,serif;font-size:clamp(19px,3vw,24px);font-weight:700;margin-bottom:6px}
+  .banner h3 em{color:#F5C069;font-style:normal}
+  .banner p{font-size:14.5px;line-height:1.55;color:#C4CCC6;max-width:72ch}
+
+  /* ---------- takeaways ---------- */
+  .takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+  @media(max-width:760px){.takeaways{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:var(--radius);padding:18px}
+  .card .k{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:block}
+  .card:nth-child(1) .k{color:var(--route)}
+  .card:nth-child(2) .k{color:var(--flag)}
+  .card:nth-child(3) .k{color:var(--ok)}
+  .card h4{font-family:"Bricolage Grotesque",Georgia,serif;font-size:17px;font-weight:700;margin-bottom:6px}
+  .card p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+
+  .enabler{margin-top:26px;padding-top:18px;border-top:1px solid var(--grid);font-size:14px;color:var(--muted);line-height:1.6;max-width:74ch}
+  .enabler strong{color:var(--ink)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Daytona · a 20-second demo</div>
+    <h1><span class="over">Start over.</span> <span class="over">Start over.</span> <span class="struck">Start over.</span> <span class="branch">Branch.</span></h1>
+    <p class="sub">Coding agents throw away good work every time they hit a dead end. <strong>Daytona lets an agent save its progress, copy it, and try many next steps from that point</strong> — like base camps on a climb. Watch two identical agents attempt the same task.</p>
+    <div class="controls">
+      <button class="replay" id="replayBtn">Replay the race</button>
+      <span class="hint" id="raceHint">racing…</span>
+    </div>
+  </header>
+
+  <section class="stage" aria-label="Side by side comparison of two agents">
+
+    <!-- ============ OLD WAY ============ -->
+    <div class="panel panel--old">
+      <span class="tag">Today · without save points</span>
+      <h2>Hit a dead end → start from zero</h2>
+      <p class="desc">Every failed attempt erases the road already traveled.</p>
+
+      <svg class="map" viewBox="0 0 320 250" role="img" aria-label="An agent repeatedly travels partway to the goal, fails, and restarts from the beginning">
+        <defs>
+          <pattern id="dotsA" width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="#E3E9E2"/>
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="320" height="250" fill="url(#dotsA)" rx="10"/>
+
+        <g id="oldGhosts"></g>
+        <path id="oldP1" class="trail" d="M30 225 C 80 210, 90 165, 140 158 C 166 154, 176 168, 192 160"/>
+        <path id="oldP2" class="trail" d="M30 225 C 50 180, 110 192, 142 166 C 176 138, 162 122, 202 112"/>
+        <path id="oldP3" class="trail" d="M30 225 C 92 220, 122 182, 162 172 C 202 162, 212 132, 236 118"/>
+        <g id="oldXs"></g>
+
+        <circle cx="30" cy="225" r="4.5" fill="var(--ink)"/>
+        <text class="maplabel" x="22" y="243">START</text>
+
+        <polygon class="goal-star" id="oldStar" points="285,31 288,38.5 296,39 290,44.5 292,52 285,48 278,52 280,44.5 274,39 282,38.5"/>
+        <text class="maplabel" x="268" y="66">TASK SOLVED</text>
+
+        <circle id="oldDot" class="agent-dot gone" cx="30" cy="225" r="6"/>
+      </svg>
+
+      <div class="barwrap"><div class="bar" id="oldBar"></div></div>
+      <div class="stats">
+        <span>attempt <b id="oldAttempt">–</b></span>
+        <span class="bad">work thrown away <b id="oldWaste">0%</b></span>
+      </div>
+      <div class="status searching" id="oldStatus">warming up</div>
+    </div>
+
+    <!-- ============ DAYTONA WAY ============ -->
+    <div class="panel panel--new">
+      <span class="tag">With Daytona · save &amp; branch</span>
+      <h2>Save good progress → branch from it</h2>
+      <p class="desc">One climb to base camp, then several ideas explored at once.</p>
+      <span class="badge" id="badge">Solved ✓</span>
+
+      <svg class="map" viewBox="0 0 320 250" role="img" aria-label="An agent travels to a save point, then three copies branch out; one reaches the goal">
+        <defs>
+          <pattern id="dotsB" width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="#E3E9E2"/>
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="320" height="250" fill="url(#dotsB)" rx="10"/>
+
+        <path id="trunk" class="trail" d="M30 225 C 82 212, 102 172, 150 150"/>
+        <path id="br1" class="trail" d="M150 150 C 172 160, 186 176, 206 180"/>
+        <path id="br2" class="trail" d="M150 150 C 176 142, 196 148, 216 137"/>
+        <path id="br3" class="trail" d="M150 150 C 182 124, 232 88, 281 45"/>
+        <g id="newXs"></g>
+
+        <circle cx="30" cy="225" r="4.5" fill="var(--ink)"/>
+        <text class="maplabel" x="22" y="243">START</text>
+
+        <!-- checkpoint flag -->
+        <g class="flaggroup" id="flag">
+          <circle class="clone-ring" id="ring1" cx="150" cy="150" r="10"/>
+          <circle class="clone-ring" id="ring2" cx="150" cy="150" r="10"/>
+          <circle cx="150" cy="150" r="5" fill="#fff" stroke="var(--flag)" stroke-width="2.4"/>
+          <line x1="150" y1="144" x2="150" y2="126" stroke="var(--flag)" stroke-width="2"/>
+          <polygon points="150,126 165,131 150,136" fill="var(--flag)"/>
+          <text class="savelabel" x="112" y="168">SAVED ✓</text>
+        </g>
+
+        <polygon class="goal-star" id="newStar" points="285,31 288,38.5 296,39 290,44.5 292,52 285,48 278,52 280,44.5 274,39 282,38.5"/>
+        <circle class="goal-ring" id="goalRing" cx="285" cy="41" r="14"/>
+        <text class="maplabel" x="268" y="66">TASK SOLVED</text>
+
+        <circle id="newDot" class="agent-dot gone" cx="30" cy="225" r="6"/>
+        <circle id="bDot1" class="agent-dot gone" cx="150" cy="150" r="5"/>
+        <circle id="bDot2" class="agent-dot gone" cx="150" cy="150" r="5"/>
+        <circle id="bDot3" class="agent-dot gone" cx="150" cy="150" r="5"/>
+      </svg>
+
+      <div class="barwrap">
+        <div class="bar" id="newBar"></div>
+        <span class="barnote" id="barNote">save point</span>
+      </div>
+      <div class="stats">
+        <span>branches tried <b id="newBranches">0</b></span>
+        <span class="good">work thrown away <b id="newWaste">0%</b></span>
+      </div>
+      <div class="status searching" id="newStatus">warming up</div>
+    </div>
+  </section>
+
+  <div class="banner" id="banner">
+    <h3>Halfway isn’t failure. It’s <em>an asset</em> — if you can copy it.</h3>
+    <p>Same agent, same task. The one that could branch solved it on the first climb, while the other is still redoing work it already finished. When exploring a new idea costs almost nothing, agents can afford to be bold — and they get to answers faster, more often.</p>
+  </div>
+
+  <section class="takeaways">
+    <div class="card">
+      <span class="k">01 · Keep the work</span>
+      <h4>Nothing gets thrown away</h4>
+      <p>A dead end no longer erases the road before it. Hard-won progress becomes a permanent save point.</p>
+    </div>
+    <div class="card">
+      <span class="k">02 · Multiply it</span>
+      <h4>Try many ideas at once</h4>
+      <p>Copy the save point and explore several next steps in parallel. A risky guess costs a small branch, not the whole journey.</p>
+    </div>
+    <div class="card">
+      <span class="k">03 · Win more</span>
+      <h4>Solve more, more reliably</h4>
+      <p>More paths explored per task means higher success rates — on real engineering work and on the public benchmarks buyers compare.</p>
+    </div>
+  </section>
+
+  <p class="enabler"><strong>Why Daytona is the enabler:</strong> branching is only practical if copies are instant and cheap. Daytona snapshots an agent’s entire working environment and spins up perfect copies in moments — turning “start over” into “branch from here.”</p>
+
+</div>
+
+<script>
+(function(){
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var runId = 0;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  var oldPaths = [$("oldP1"), $("oldP2"), $("oldP3")];
+  var oldFail  = [0.58, 0.71, 0.66];
+  var oldDot = $("oldDot"), oldBar = $("oldBar"),
+      oldAttempt = $("oldAttempt"), oldWaste = $("oldWaste"),
+      oldStatus = $("oldStatus"), oldGhosts = $("oldGhosts"), oldXs = $("oldXs");
+
+  var trunk = $("trunk"), branches = [$("br1"), $("br2"), $("br3")];
+  var bDots = [$("bDot1"), $("bDot2"), $("bDot3")];
+  var newDot = $("newDot"), newBar = $("newBar"), barNote = $("barNote"),
+      newBranches = $("newBranches"), newWaste = $("newWaste"),
+      newStatus = $("newStatus"), flag = $("flag"),
+      newXs = $("newXs"), badge = $("badge"), banner = $("banner"),
+      goalRing = $("goalRing"), newStar = $("newStar"),
+      raceHint = $("raceHint");
+
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function easeInOut(t){ return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+
+  function hidePath(p){
+    var L = p.getTotalLength();
+    p.style.strokeDasharray = L;
+    p.style.strokeDashoffset = L;
+    p.style.opacity = 0;
+    p.classList.remove("ghosted","won");
+  }
+
+  // Move a dot along a path while revealing the stroke.
+  function travel(path, dot, dur, token, onProgress){
+    return new Promise(function(resolve){
+      var L = path.getTotalLength();
+      path.style.strokeDasharray = L;
+      path.style.strokeDashoffset = L;
+      path.style.opacity = 1;
+      dot.classList.remove("gone");
+      var start = null;
+      function frame(t){
+        if (token !== runId){ resolve(false); return; }
+        if (start === null) start = t;
+        var p = Math.min(1, (t - start) / dur);
+        var e = easeInOut(p);
+        path.style.strokeDashoffset = L * (1 - e);
+        var pt = path.getPointAtLength(L * e);
+        dot.setAttribute("cx", pt.x);
+        dot.setAttribute("cy", pt.y);
+        if (onProgress) onProgress(e);
+        if (p < 1) requestAnimationFrame(frame);
+        else resolve(true);
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function addX(group, path){
+    var L = path.getTotalLength();
+    var pt = path.getPointAtLength(L);
+    var x = document.createElementNS("http://www.w3.org/2000/svg","text");
+    x.setAttribute("class","xmark show");
+    x.setAttribute("x", pt.x - 4);
+    x.setAttribute("y", pt.y + 4.5);
+    x.textContent = "✕";
+    group.appendChild(x);
+  }
+
+  function ghostCopy(path){
+    var g = path.cloneNode(false);
+    g.removeAttribute("id");
+    g.setAttribute("class","trail ghosted");
+    g.style.strokeDasharray = "none";
+    g.style.strokeDashoffset = "0";
+    g.style.opacity = "";
+    oldGhosts.appendChild(g);
+  }
+
+  function setStatus(el, text, cls){
+    el.className = "status " + cls;
+    el.textContent = text;
+  }
+
+  /* ---------------- left panel: restart loop ---------------- */
+  async function runOld(token){
+    var wasted = 0;
+    var maxAttempts = 6;
+    for (var a = 1; a <= maxAttempts; a++){
+      if (token !== runId) return;
+      var i = (a - 1) % 3;
+      var path = oldPaths[i];
+      hidePath(path);
+      oldAttempt.textContent = String(a);
+      setStatus(oldStatus, "searching", "searching");
+      oldBar.classList.remove("fail");
+
+      var target = oldFail[i];
+      var ok = await travel(path, oldDot, reduced ? 60 : 2100, token, function(e){
+        oldBar.style.width = (e * target * 100) + "%";
+      });
+      if (!ok) return;
+
+      // fail
+      oldDot.classList.add("failing");
+      oldBar.classList.add("fail");
+      setStatus(oldStatus, "dead end — restarting from zero", "searching");
+      addX(oldXs, path);
+      wasted += target;
+      oldWaste.textContent = Math.round(wasted * 100) + "%";
+      await sleep(reduced ? 40 : 650);
+      if (token !== runId) return;
+
+      ghostCopy(path);
+      hidePath(path);
+      oldDot.classList.remove("failing");
+      oldDot.setAttribute("cx", 30); oldDot.setAttribute("cy", 225);
+      oldBar.style.width = "0%";
+      oldBar.classList.remove("fail");
+      await sleep(reduced ? 40 : 420);
+    }
+    if (token !== runId) return;
+    setStatus(oldStatus, "still searching", "searching");
+  }
+
+  /* ---------------- right panel: save & branch ---------------- */
+  async function runNew(token){
+    setStatus(newStatus, "searching", "searching");
+    var ok = await travel(trunk, newDot, reduced ? 60 : 2100, token, function(e){
+      newBar.style.width = (e * 62) + "%";
+    });
+    if (!ok) return;
+
+    // checkpoint
+    flag.classList.add("show");
+    $("ring1").classList.add("pop");
+    newBar.classList.add("saved");
+    barNote.classList.add("show");
+    setStatus(newStatus, "progress saved — making copies", "saved");
+    await sleep(reduced ? 40 : 700);
+    if (token !== runId) return;
+
+    $("ring2").classList.add("pop");
+    newDot.classList.add("gone");
+    setStatus(newStatus, "3 branches exploring from the save point", "saved");
+    newBranches.textContent = "3";
+
+    var durs = reduced ? [60,60,60] : [1350, 1600, 1900];
+    var winnerProgress = function(e){ newBar.style.width = (62 + e * 38) + "%"; };
+
+    var b1 = travel(branches[0], bDots[0], durs[0], token).then(function(ok){
+      if (!ok) return;
+      addX(newXs, branches[0]);
+      branches[0].classList.add("ghosted");
+      bDots[0].classList.add("gone");
+      newWaste.textContent = "5%";
+    });
+    var b2 = travel(branches[1], bDots[1], durs[1], token).then(function(ok){
+      if (!ok) return;
+      addX(newXs, branches[1]);
+      branches[1].classList.add("ghosted");
+      bDots[1].classList.add("gone");
+      newWaste.textContent = "9%";
+    });
+    var b3 = travel(branches[2], bDots[2], durs[2], token, winnerProgress).then(function(ok){
+      if (!ok) return;
+      branches[2].classList.add("won");
+      trunk.classList.add("won");
+      newStar.classList.add("lit");
+      goalRing.classList.add("pop");
+      bDots[2].classList.add("gone");
+    });
+
+    await Promise.all([b1, b2, b3]);
+    if (token !== runId) return;
+
+    newBar.classList.remove("saved");
+    newBar.classList.add("done");
+    newBar.style.width = "100%";
+    badge.classList.add("show");
+    setStatus(newStatus, "solved — every step of the climb was kept", "solved");
+    raceHint.textContent = "solved on the right · still restarting on the left";
+    banner.classList.add("show");
+  }
+
+  /* ---------------- reset + start ---------------- */
+  function resetAll(){
+    runId++;
+    oldGhosts.innerHTML = ""; oldXs.innerHTML = ""; newXs.innerHTML = "";
+    oldPaths.concat([trunk], branches).forEach(hidePath);
+    [oldDot, newDot, bDots[0], bDots[1], bDots[2]].forEach(function(d){
+      d.classList.add("gone");
+      d.classList.remove("failing");
+    });
+    oldDot.setAttribute("cx",30); oldDot.setAttribute("cy",225);
+    newDot.setAttribute("cx",30); newDot.setAttribute("cy",225);
+    bDots.forEach(function(d){ d.setAttribute("cx",150); d.setAttribute("cy",150); });
+    oldBar.style.width = "0%"; oldBar.className = "bar";
+    newBar.style.width = "0%"; newBar.className = "bar";
+    barNote.classList.remove("show");
+    flag.classList.remove("show");
+    $("ring1").classList.remove("pop"); $("ring2").classList.remove("pop");
+    goalRing.classList.remove("pop");
+    newStar.classList.remove("lit");
+    badge.classList.remove("show");
+    banner.classList.remove("show");
+    oldAttempt.textContent = "–"; oldWaste.textContent = "0%";
+    newBranches.textContent = "0"; newWaste.textContent = "0%";
+    setStatus(oldStatus, "warming up", "searching");
+    setStatus(newStatus, "warming up", "searching");
+    raceHint.textContent = "racing…";
+  }
+
+  function startRace(){
+    resetAll();
+    var token = runId;
+    runOld(token);
+    runNew(token);
+  }
+
+  $("replayBtn").addEventListener("click", startRace);
+  setTimeout(startRace, reduced ? 100 : 500);
+})();
+</script>
+</body>
+</html>
