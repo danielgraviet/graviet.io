@@ -152,6 +152,22 @@ tags: [AI, Writing]
 
 Use [`content/posts/hello-world.md`](/Users/danielgraviet/Desktop/projects/graviet.io/content/posts/hello-world.md) as the canonical example for structure and tone of frontmatter.
 
+## Blog Image Style Guide
+
+Use a consistent editorial illustration style for generated blog images:
+
+- Minimal, slightly cartoonish, almost anime-inspired technical illustration.
+- Soft warm-white backgrounds, clean composition, subtle grain, and gentle shadows.
+- Subjects should feel concrete and explanatory, not abstract filler: whiteboards, GPUs, restaurants, answer cards, model blocks, tests, sandboxes, or other objects that directly visualize the paragraph.
+- Prefer semi-realistic objects with simplified shapes: realistic enough to be recognizable, stylized enough to feel approachable.
+- Use restrained colors: warm cream, charcoal, muted blue, soft green, amber, and small red accents for failure/error.
+- Avoid readable text, fake labels, brand logos, watermarks, dense UI, or cluttered diagrams.
+- Use 16:9 wide images for inline blog illustrations.
+- Add useful alt text and a short italic caption immediately under each image.
+- Store article assets in `public/blog/<slug>/` and reference them from markdown as `/blog/<slug>/<filename>.png`.
+
+Current reference images for this theme live in [`public/blog/grpo/`](/Users/danielgraviet/Desktop/projects/graviet.io/public/blog/grpo/). Match that family when adding future blog illustrations.
+
 ### Notes For Agents
 
 - The filename should generally match the slug: `my-new-post.md` -> `slug: my-new-post`.
