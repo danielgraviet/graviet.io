@@ -1,6 +1,7 @@
 ---
 title: "GRPO: Learning From the Other Answers in the Room"
 slug: grpo-simple-explanation
+excerpt: A simple breakdown of GRPO, a reinforcement learning method that removes the need for a separate value model. Full of analogies, and images to make the concept more approachable.
 status: idea
 createdAt: 2026-05-27
 publishedAt: 2026-05-27
