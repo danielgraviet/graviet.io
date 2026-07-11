@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SectionHeading from "@/components/SectionHeading";
 
 export const metadata: Metadata = {
@@ -7,8 +8,18 @@ export const metadata: Metadata = {
 
 const sections: {
   heading: string;
-  items: { name: string; description: string }[];
+  items: { name: string; description: string; href?: string }[];
 }[] = [
+  {
+    heading: "SEO Tools",
+    items: [
+      {
+        name: "TTFB Tool",
+        description: "Measure time to first byte from an ephemeral Daytona sandbox.",
+        href: "/tools/ttfb",
+      },
+    ],
+  },
   {
     heading: "Hardware",
     items: [
@@ -60,7 +71,16 @@ export default function ToolsPage() {
                   key={item.name}
                   className="flex flex-col gap-0.5 border-b border-border py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
                 >
-                  <span className="shrink-0 text-base font-semibold">{item.name}</span>
+                  {item.href ? (
+                    <Link
+                      href={item.href}
+                      className="shrink-0 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary"
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <span className="shrink-0 text-base font-semibold">{item.name}</span>
+                  )}
                   <span className="text-sm leading-relaxed text-text-secondary">{item.description}</span>
                 </div>
               ))}

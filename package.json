@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@daytona/sdk": "^0.196.0",
     "@splinetool/react-spline": "^4.1.0",
     "@types/katex": "^0.16.8",
     "gray-matter": "^4.0.3",
@@ -36,6 +38,7 @@
     "eslint-config-next": "16.1.6",
     "prettier": "^3.8.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
