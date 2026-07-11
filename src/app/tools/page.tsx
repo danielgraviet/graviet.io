@@ -11,12 +11,22 @@ const sections: {
   items: { name: string; description: string; href?: string }[];
 }[] = [
   {
-    heading: "SEO Tools",
+    heading: "Site Tools",
     items: [
       {
         name: "TTFB Tool",
         description: "Measure time to first byte from an ephemeral Daytona sandbox.",
         href: "/tools/ttfb",
+      },
+      {
+        name: "Interview Timer",
+        description: "Timed interview practice with prompts, phases, and notes.",
+        href: "/interview-tool",
+      },
+      {
+        name: "Daytona Branching Demo",
+        description: "Interactive demo showing how sandbox snapshots let agents branch from saved progress.",
+        href: "/daytona-search-demo",
       },
     ],
   },
