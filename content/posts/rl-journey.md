@@ -10,28 +10,35 @@ tags: [AI, RL, RLVR, Reinforcement Learning]
 summary: "A personal argument for studying classic reinforcement learning before chasing every new post-training trend."
 ---
 
-**Thesis:** Modern AI progress is starting to look reinforcement-learning-shaped again. The vocabulary has changed, but many of the hard problems are old: reward design, exploration, credit assignment, evaluation, and learning from feedback.
-
-At first, that sounds strange.
+**Thesis:** Modern AI involves classic reinforcement learning problems all the way back from the 1960's. The vocabulary has changed, but many of the hard problems are old. Specifically reward design, exploration, credit assignment, evaluation, and learning from feedback.
 
 The current frontier does not look like the reinforcement learning I first associated with Atari, MuJoCo, robotics, or AlphaGo. Today people talk about RLHF, RLAIF, RLVR, reasoning models, coding agents, verifiers, tool use, and post-training.
 
-But underneath the new words, the old questions are back.
+But underneath the new words, the old questions still remain.
 
 - What should the model optimize?
 - How do we define a useful reward?
 - How do we know whether the system is actually improving?
 - How do we avoid reward hacking?
 - How do we assign credit across long chains of reasoning or action?
-- How do we create environments where learning can compound?
 
-I think there is a real danger in diving straight into the newest RL regime without first understanding the older one. It is like trying to jump straight into calculus without first building strong algebra. With enough effort, you can still make progress by memorizing steps, copying solutions, and grinding through examples. But compared with someone who has the fundamentals, you miss the deeper structure.
+The classic RL loop makes this concrete. An agent observes a state, takes an action, receives reward, and changes the environment.
 
-That is how I currently feel about reinforcement learning.
+![Classic reinforcement learning loop with agent, environment, action, state, and reward](/blog/rl-journey/classic-rl-loop.svg)
 
-RL has already been part of LLM post-training for years. What feels different now is that more of the frontier is moving from one-time preference tuning toward systems that act, verify, retry, use tools, and learn from feedback. In that world, people with strong RL foundations will have an advantage. Not because they are attached to old methods, but because they can recognize old problems beneath new terminology.
+_The classic loop: agent, environment, action, state, and reward._
 
-This post makes four claims:
+Modern systems look different because the nouns changed. The agent is now a model, the action might be a tool call, the state is context, and the reward can come from humans, AI feedback, tests, or verifiers.
+
+![Modern language-model reinforcement learning loop with swapped labels and variables](/blog/rl-journey/modern-rl-loop.svg)
+
+_The modern loop: model agents, context, tool calls, and verifier feedback._
+
+That is why I think there is a real danger in diving straight into the newest RL regime without first understanding the older one. It is like trying to jump straight into calculus without first building strong algebra. With enough effort, you can still make progress by memorizing steps, copying solutions, and grinding through examples. But compared with someone who has the fundamentals, you miss the deeper structure.
+
+RL has already been part of LLM post-training for years. What feels different now is that more of the frontier is moving from one-time preference tuning toward systems that act, verify, retry, use tools, and learn from feedback. In that world, people with strong RL foundations will have an advantage because they can recognize old problems beneath new terminology.
+
+I make four claims in this blog:
 
 - Modern AI is rediscovering classic RL problems through language models, agents, verifiers, tool use, and feedback loops.
 - People with strong classical RL foundations are better positioned to understand what is happening.
@@ -48,37 +55,43 @@ I will focus on three of them: reward design, credit assignment, and exploration
 
 ### Reward Design
 
-The classic version is reward shaping.
+The classic version is reward shaping. This answers the question of "How can you give AI hints to speed up learning without changing its actual goal?
 
-In 1999, [Andrew Ng, Daishi Harada, and Stuart Russell](https://www.andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping/) studied when we can modify a reward function to help an RL agent learn faster without changing the actual goal. Their key result was that a certain kind of shaping reward, called **potential-based reward shaping**, preserves the optimal policy.
-
-The shaping reward has this form:
+In 1999, [Andrew Ng, Daishi Harada, and Stuart Russell](https://www.andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping/) tried to solve this eaxact problem. They proved that you give give an agent extra guidance as long as the bonus follows a strict mathematical rule.
 
 $$
-F(s, a, s') = \gamma \Phi(s') - \Phi(s)
+F(s, a, s^{\prime}) = \gamma \Phi(s^{\prime}) - \Phi(s)
 $$
 
-The cool part is that the extra reward comes from the change in a potential function, $\Phi$, between states. The agent can get guidance, but it cannot create a free positive-reward machine by cycling in place.
+When I first saw this equation, I had no idea what it meant, so here is a quick breakdown.
 
-The intuition is simple. Extra rewards can guide learning, but badly designed extra rewards can create the wrong behavior.
+$F(s, a, s^{\prime})$ is the extra "bonus" reward the agent gets for taking an action ($a$) to move from its current state ($s$) to a new state ($s^{\prime}$).
 
-Imagine an agent can move from state A to state B, then back to state A, and collect positive reward each time it cycles. The agent may learn to farm the loop instead of solving the real task. Potential-based shaping avoids this by making the extra reward behave more like a difference in potential between states than a free reward source.
+$\Phi$ (Phi) is a "potential" score. It estimates how close a specific state is to the final goal.
+
+$\gamma$ (Gamma) is just a scaling factor to keep the math stable over time.
+
+Think of it like elevation on a hike. If you walk uphill from basecamp to a ridge, you gain elevation (positive reward). But if you turn around and walk back down to basecamp, you lose that exact same amount of elevation (negative reward). Because the reward is tied purely to the "elevation" of the states, the agent cannot artificially farm points by walking back and forth between the same two spots.
 
 ![A small agent looping between two states to collect reward while ignoring the real goal](/blog/rl-journey/reward-loop.png)
 
 _Bad reward design can turn a learning problem into a loop that looks productive but misses the goal._
 
-The modern version is RLHF, RLAIF, and RLVR.
+Today, we face the exact same problem, but under new acronyms like RLHF, RLAIF, and RLVR.
 
-In InstructGPT, OpenAI trained a reward model from human preferences, then optimized the language model against that reward with PPO. In Constitutional AI, Anthropic used AI-generated feedback to reduce dependence on human labels. In RLVR, systems use verifiable signals like final-answer correctness or unit tests.
+The challenge with modern language models is that you cannot write a simple mathematical equation for "be helpful" or "do not be toxic." Because the goal is fuzzy, AI labs had to get creative about how they generate the reward signal:
 
-The modern question is the same as the classic one:
+RLHF (OpenAI’s InstructGPT): They had humans rate different AI responses, trained a secondary "reward model" to predict what humans would like, and then optimized the main AI against that proxy.
 
-> Does the reward actually capture what we want, or just what is easy to score?
+RLAIF (Anthropic’s Constitutional AI): Human grading is slow and expensive. Anthropic swapped the humans out for an AI, asking it to grade responses based on a written list of rules (a "constitution") to generate the feedback.
 
-If the reward is flawed, the model may learn the wrong thing. It may become overly confident because confidence scores well. It may become sycophantic because agreement gets rewarded. A coding model may hardcode the visible tests instead of solving the general problem. A reasoning model may learn to produce traces that look convincing without becoming more reliable.
+RLVR (Verifiable Rewards): For math or coding, the system uses an automated checker—like running unit tests—to provide a definitive pass/fail reward.
 
-This is not a new category of problem. It is reward design.
+Regardless of which method you use, the modern question is the exact same as the classic one:
+
+Does the reward actually capture what we want, or just what is easy to score?
+
+If the reward signal is flawed, the model will learn the wrong behavior. It may become overly confident because confidence scores well with human raters. It may become sycophantic because agreeing with the user gets rewarded. A coding model might hardcode the exact answers to the visible tests instead of writing a general function. A reasoning model might learn to produce long, smart-sounding thought traces that look convincing to a grader, without actually becoming more accurate.
 
 ### Credit Assignment
 
@@ -127,27 +140,21 @@ That is a very RL-flavored claim.
 
 Good agents need enough exploration to discover better behavior and enough exploitation to make consistent progress. This is true for bandits, games, robotics, theorem proving, coding agents, and probably most interesting AI systems.
 
-The pattern is the point.
-
-We now say RLHF, RLAIF, RLVR, verifiers, reasoning models, and agents. Classic RL said rewards, credit assignment, exploration, policies, environments, and feedback. The packaging has changed. The problems have not.
-
 ## Classical RL People Have Leverage
 
 The people who spent years thinking about rewards, environments, exploration, evaluation, credit assignment, self-play, and learning from feedback are naturally better positioned for this moment.
 
-![Three panels showing classic RL paths through self-play, Atari evaluation, and robotics](/blog/rl-journey/classic-rl-people.png)
+![David Silver, Marc Bellemare, and Sergey Levine](/blog/rl-journey/classic-rl-people.jpg)
 
 _Classic RL intuition now shows up in search, benchmark design, robotics, and agent training._
 
-[David Silver](https://www.wired.com/story/david-silver-ai-ineffable-intelligence-reinforcement-learning/) is one example. His work on AlphaGo and AlphaZero showed that a system could improve through search, self-play, feedback, and repeated interaction with an environment. That intuition becomes valuable again when people ask how models can learn beyond imitation. Silver now leads Ineffable Intelligence, which has reportedly raised $1.1 billion at a $5.1 billion valuation.
+[David Silver](https://www.wired.com/story/david-silver-ai-ineffable-intelligence-reinforcement-learning/) is one example. His work on AlphaGo and AlphaZero showed that a system could improve through search, self-play, feedback, and repeated interaction with an environment. That intuition becomes valuable again when people ask how models can learn beyond imitation. Silver now leads Ineffable Intelligence, which has reportedly raised \$1.1 billion at a \$5.1 billion valuation.
 
 [Marc Bellemare](https://arxiv.org/abs/1207.4708) is another example. His work on the Arcade Learning Environment helped define how RL agents should be evaluated across many tasks. That connects directly to today's concerns about whether models are actually improving, overfitting to benchmarks, optimizing flawed rewards, or failing outside the test setting. Bellemare also co-founded [Reliant AI](https://cohere.com/blog/cohere-acquires-reliant-ai-expand-sovereign-enterprise-ai), which Cohere acquired to expand its sovereign enterprise AI work in biopharma and healthcare.
 
-[Sergey Levine](https://www.wired.com/story/physical-intelligence-ai-robotics-startup/) shows the same pattern in robotics. A robot does more than predict the next token. It acts, observes consequences, fails, and tries again. It has to learn policies that work in messy environments. Levine co-founded [Physical Intelligence](https://www.physicalintelligence.company/), which raised $400 million at a valuation above $2 billion. That style of thinking becomes more useful as AI systems move from chat interfaces toward agents that take actions in the world.
+[Sergey Levine](https://www.wired.com/story/physical-intelligence-ai-robotics-startup/) shows the same pattern in robotics. A robot does more than predict the next token. It acts, observes consequences, fails, and tries again. It has to learn policies that work in messy environments. Levine co-founded [Physical Intelligence](https://www.physicalintelligence.company/), which raised \$400 million at a valuation above \$2 billion. That style of thinking becomes more useful as AI systems move from chat interfaces toward agents that take actions in the world.
 
-The point is not that classic RL people automatically know the answer to every modern AI problem.
-
-The point is that classic RL gives them a conceptual map. When a new post-training method appears, they can ask sharper questions:
+Classic RL have given these 3 specific examples a conceptual map. When a new post-training method appears, they can ask sharper questions:
 
 - What is the reward?
 - What is the environment?
@@ -160,7 +167,7 @@ The point is that classic RL gives them a conceptual map. When a new post-traini
 
 Studying classic RL matters because it builds taste.
 
-Modern post-training can look like a blur of acronyms: RLHF, RLAIF, RLVR, PPO, GRPO, verifiers, reasoning models, agents, tool use, process reward models, outcome reward models, and so on.
+Modern post-training can look like a blur of acronyms and new vocabulary: RLHF, RLAIF, RLVR, PPO, GRPO, verifiers, reasoning models, agents, tool use, process reward models, outcome reward models, and so on.
 
 Classic RL gives you the underlying language for understanding what is actually happening.
 
@@ -168,11 +175,11 @@ This is the part I find useful in practice. When I read a new post-training pape
 
 If a paper uses a reward model, I want to ask what behavior that reward model makes easier to learn. If it uses a verifier, I want to ask what kind of environment that verifier creates. If it trains on long reasoning traces, I want to ask where credit assignment is happening. If it reports gains on a coding benchmark, I want to ask whether the model learned to solve the task or learned the shape of the benchmark.
 
-That is a different feeling from memorizing definitions. It is more like having a debugging lens for AI systems.
+That is a different feeling from memorizing definitions and is more like having a debugging lens for AI systems.
 
 This is why classic RL is practical, not just historical.
 
-It gives you a stronger filter for new papers, new systems, and new claims. Instead of chasing every new post-training trend, you can recognize the old problem underneath the new name. That makes it easier to judge what matters, avoid fragile ideas, and come up with more original ones.
+It gives you a stronger filter for new papers, new systems, and new claims. Instead of chasing every new post-training trend, you can recognize the old problem underneath the new name. That makes it easier to judge what matters, avoid fragile ideas, and come up with more original ones!
 
 ## My Study Path
 
