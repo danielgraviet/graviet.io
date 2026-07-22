@@ -19,6 +19,11 @@ const sections: {
         href: "/tools/ttfb",
       },
       {
+        name: "Learning Roadmap",
+        description: "Concepts encountered while working, tracked as a checklist.",
+        href: "/tools/roadmap",
+      },
+      {
         name: "Interview Timer",
         description: "Timed interview practice with prompts, phases, and notes.",
         href: "/interview-tool",

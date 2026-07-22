@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@daytona/sdk": "^0.196.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@splinetool/react-spline": "^4.1.0",
     "@types/katex": "^0.16.8",
     "gray-matter": "^4.0.3",
