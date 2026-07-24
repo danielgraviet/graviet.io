@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Runtime Systems Mastery Roadmap</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --panel-2: #18223a;
+      --text: #edf2ff;
+      --muted: #aab5d1;
+      --border: #2c3957;
+      --accent: #7c9cff;
+      --accent-2: #60d6b7;
+      --danger: #ff7f91;
+      --warning: #f6c76a;
+      --shadow: 0 18px 45px rgba(0,0,0,.22);
+    }
+    [data-theme="light"] {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-2: #f1f5fb;
+      --text: #172033;
+      --muted: #62708b;
+      --border: #d7dfec;
+      --accent: #365ee8;
+      --accent-2: #087f68;
+      --danger: #c93c55;
+      --warning: #9a6400;
+      --shadow: 0 14px 35px rgba(34,53,84,.12);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1440px, 100%); margin: 0 auto; padding: 24px; }
+    .topbar {
+      display: flex; gap: 18px; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 6px; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -.03em; }
+    h2, h3 { margin-top: 0; }
+    .subtitle { margin: 0; color: var(--muted); max-width: 820px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .btn {
+      border: 1px solid var(--border); background: var(--panel); color: var(--text);
+      border-radius: 10px; padding: 9px 12px;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn.primary { background: var(--accent); color: white; border-color: transparent; }
+    .btn.danger { color: var(--danger); }
+    .stats {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
+    }
+    .stat {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; box-shadow: var(--shadow);
+    }
+    .stat-label { color: var(--muted); font-size: .86rem; }
+    .stat-value { font-size: 1.65rem; font-weight: 750; margin-top: 3px; }
+    .progress-track {
+      height: 10px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+    .progress-bar { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent-2)); width: 0; }
+    .workspace { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .sidebar {
+      position: sticky; top: 16px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px; box-shadow: var(--shadow);
+    }
+    .sidebar label { display: block; font-size: .85rem; color: var(--muted); margin: 10px 0 5px; }
+    .field {
+      width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px;
+      background: var(--panel-2); color: var(--text);
+    }
+    .nav { margin-top: 14px; display: grid; gap: 5px; max-height: 56vh; overflow: auto; padding-right: 3px; }
+    .nav button {
+      border: 0; background: transparent; color: var(--muted); text-align: left; padding: 8px;
+      border-radius: 8px;
+    }
+    .nav button:hover, .nav button.active { background: var(--panel-2); color: var(--text); }
+    .main { min-width: 0; }
+    .domain {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+      padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .domain-header { display: flex; gap: 14px; justify-content: space-between; align-items: flex-start; }
+    .domain-title { margin-bottom: 4px; }
+    .goal { color: var(--muted); margin: 0; }
+    .domain-progress { min-width: 120px; text-align: right; }
+    .percent { font-weight: 750; font-size: 1.1rem; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 10px; }
+    .tab {
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      padding: 6px 9px; border-radius: 999px;
+    }
+    .tab.active { background: var(--panel-2); color: var(--text); border-color: var(--accent); }
+    .tab-panel[hidden] { display: none; }
+    .checklist { display: grid; gap: 7px; }
+    .check-row {
+      display: grid; grid-template-columns: 24px minmax(0, 1fr) 105px; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 10px; background: var(--panel-2); border: 1px solid transparent;
+    }
+    .check-row:hover { border-color: var(--border); }
+    .check-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    .check-row.done .item-text { text-decoration: line-through; color: var(--muted); }
+    .level-select {
+      border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
+      color: var(--text); padding: 5px 6px; width: 100%;
+    }
+    .notes {
+      width: 100%; min-height: 130px; resize: vertical; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--panel-2); color: var(--text); padding: 10px;
+    }
+    .resource-list, .project-list { margin: 0; padding-left: 20px; }
+    .resource-list li, .project-list li { margin: 7px 0; }
+    .milestone-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .milestone {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+    }
+    .milestone strong { display: block; margin-bottom: 4px; }
+    .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+    .footer-note { color: var(--muted); font-size: .85rem; text-align: center; padding: 10px 0 24px; }
+    .hidden { display: none !important; }
+    dialog {
+      border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text);
+      width: min(560px, calc(100% - 28px)); box-shadow: var(--shadow);
+    }
+    dialog::backdrop { background: rgba(0,0,0,.55); }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .nav { max-height: none; grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .milestone-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .shell { padding: 14px; }
+      .topbar { flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .check-row { grid-template-columns: 24px minmax(0,1fr); }
+      .level-select { grid-column: 2; width: auto; }
+      .domain-header { flex-direction: column; }
+      .domain-progress { text-align: left; width: 100%; }
+    }
+    @media print {
+      .sidebar, .actions, .tabs, .footer-note { display: none !important; }
+      body { background: white; color: black; }
+      .workspace { display: block; }
+      .domain, .stat { box-shadow: none; break-inside: avoid; }
+      .tab-panel[hidden] { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <h1>AI Runtime Systems Mastery Roadmap</h1>
+        <p class="subtitle">A multi-year tracker for becoming world-class at efficient execution of intelligent systems—from hardware and operating systems to GPU, ML, RL, and agent runtimes.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="themeBtn" type="button">Toggle theme</button>
+        <button class="btn" id="exportBtn" type="button">Export progress</button>
+        <button class="btn" id="importBtn" type="button">Import progress</button>
+        <button class="btn" id="printBtn" type="button">Print</button>
+        <button class="btn danger" id="resetBtn" type="button">Reset</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden />
+      </div>
+    </header>
+
+    <section class="stats" aria-label="Roadmap statistics">
+      <div class="stat"><div class="stat-label">Overall completion</div><div class="stat-value" id="overallPercent">0%</div><div class="progress-track"><div class="progress-bar" id="overallBar"></div></div></div>
+      <div class="stat"><div class="stat-label">Topics completed</div><div class="stat-value" id="topicsDone">0 / 0</div></div>
+      <div class="stat"><div class="stat-label">Active domains</div><div class="stat-value" id="activeDomains">0</div></div>
+      <div class="stat"><div class="stat-label">Mastered topics</div><div class="stat-value" id="masteredTopics">0</div></div>
+    </section>
+
+    <div class="workspace">
+      <aside class="sidebar">
+        <label for="search">Search roadmap</label>
+        <input class="field" id="search" type="search" placeholder="e.g. CUDA, Raft, cgroups" />
+
+        <label for="statusFilter">Show</label>
+        <select class="field" id="statusFilter">
+          <option value="all">All topics</option>
+          <option value="incomplete">Incomplete topics</option>
+          <option value="complete">Completed topics</option>
+          <option value="mastered">Mastered topics</option>
+        </select>
+
+        <label for="domainFilter">Domain</label>
+        <select class="field" id="domainFilter">
+          <option value="all">All domains</option>
+        </select>
+
+        <div class="nav" id="domainNav" aria-label="Roadmap domains"></div>
+      </aside>
+
+      <main class="main">
+        <section class="milestone-grid" aria-label="Suggested milestones">
+          <div class="milestone"><strong>Foundation</strong><span>Architecture, OS, networking, and distributed systems.</span></div>
+          <div class="milestone"><strong>Specialization</strong><span>GPU, ML systems, RL systems, and cloud runtimes.</span></div>
+          <div class="milestone"><strong>Original contribution</strong><span>Publish work that changes how agent runtimes are designed.</span></div>
+        </section>
+        <div style="height:12px"></div>
+        <div id="roadmap"></div>
+        <div id="emptyState" class="empty hidden">No roadmap items match your filters.</div>
+      </main>
+    </div>
+
+    <p class="footer-note">Progress is saved automatically in your browser. Export a backup periodically so the roadmap can move with you.</p>
+  </div>
+
+  <dialog id="resetDialog">
+    <h3>Reset all progress?</h3>
+    <p>This clears completion, mastery levels, and notes stored in this browser. Export first if you may want a backup.</p>
+    <div class="dialog-actions">
+      <button class="btn" id="cancelReset" type="button">Cancel</button>
+      <button class="btn danger" id="confirmReset" type="button">Reset everything</button>
+    </div>
+  </dialog>
+
+  <script>
+    const roadmapData = [{"id": "architecture", "title": "Computer Architecture", "goal": "Understand what the hardware is actually doing.", "items": ["CPU architecture and instruction pipelines", "Memory hierarchy and cache behavior", "Cache coherence", "Branch prediction", "SIMD and vectorization", "NUMA", "PCIe and DMA", "SSD and storage internals", "Hardware performance counters"], "projects": ["Write a cache benchmark comparing access patterns", "Profile branch prediction and SIMD effects", "Build a small memory-latency visualization"], "resources": ["Computer Systems: A Programmer's Perspective", "Computer Architecture: A Quantitative Approach"]}, {"id": "operating-systems", "title": "Operating Systems", "goal": "Understand the abstractions underneath containers, runtimes, and execution environments.", "items": ["Processes and threads", "CPU scheduling", "Virtual memory and paging", "mmap and the page cache", "Synchronization and lock-free basics", "epoll, kqueue, and io_uring", "Filesystems", "Linux namespaces", "cgroups", "Signals and process lifecycle"], "projects": ["Build a tiny Unix shell", "Implement a memory allocator", "Build a thread pool", "Create a toy process scheduler", "Build a minimal container with namespaces and cgroups"], "resources": ["Operating Systems: Three Easy Pieces", "The Linux Programming Interface"]}, {"id": "networking", "title": "Networking", "goal": "Reason about latency, throughput, failure, and communication across machines.", "items": ["TCP/IP", "Congestion control", "DNS", "HTTP/1.1, HTTP/2, and HTTP/3", "QUIC", "RPC and gRPC", "Load balancing", "Service discovery", "Network namespaces and virtual networking", "Kernel bypass and RDMA basics"], "projects": ["Build an HTTP server", "Build a small RPC framework", "Build a reverse proxy", "Measure network tail latency under load"], "resources": ["Computer Networking: A Top-Down Approach", "Beej's Guide to Network Programming"]}, {"id": "distributed-systems", "title": "Distributed Systems", "goal": "Design systems that remain useful when machines, networks, and assumptions fail.", "items": ["Replication and partitioning", "Consistency models", "Consensus", "Raft and Paxos", "CAP and its limitations", "Distributed transactions", "Fault tolerance", "Schedulers and placement", "Backpressure", "Observability in distributed systems"], "projects": ["Implement Raft", "Build a replicated key-value store", "Build a distributed task scheduler", "Run failure-injection experiments"], "resources": ["Designing Data-Intensive Applications", "MIT 6.5840 Distributed Systems", "Google, Amazon, and Meta systems papers"]}, {"id": "cloud-runtime", "title": "Cloud Runtime & Kubernetes", "goal": "Understand Kubernetes and containers as runtime systems, not just deployment tools.", "items": ["Kubernetes control-plane architecture", "kubelet", "Scheduler", "Controller manager", "etcd", "OCI image and runtime specifications", "containerd and runc", "CRI", "CNI", "CSI", "Image distribution and snapshotters", "Autoscaling and cluster scheduling"], "projects": ["Write a Kubernetes scheduler plugin", "Build a minimal container runtime", "Trace pod startup end to end", "Benchmark image pulls and snapshot restoration", "Contribute to Kubernetes, containerd, or related projects"], "resources": ["Kubernetes source code", "OCI specifications", "containerd and runc source code"]}, {"id": "compilers", "title": "Compilers & Programming Languages", "goal": "Understand how high-level programs become efficient machine execution.", "items": ["Lexing and parsing", "Interpreters and bytecode", "Intermediate representations", "SSA", "Optimization passes", "JIT compilation", "LLVM", "Tracing compilers", "Automatic differentiation compilers"], "projects": ["Build a small interpreter", "Build a bytecode VM", "Write an LLVM optimization pass", "Create a toy tensor compiler"], "resources": ["Crafting Interpreters", "Engineering a Compiler", "LLVM documentation"]}, {"id": "gpu-systems", "title": "GPU Systems", "goal": "Make accelerator behavior intuitive enough to diagnose and improve real workloads.", "items": ["GPU execution model", "Warps and scheduling", "Memory hierarchy", "Occupancy", "Tensor cores", "CUDA programming", "Kernel fusion", "Triton", "CUTLASS", "NCCL", "NVLink and multi-GPU communication", "GPU profiling"], "projects": ["Write and optimize CUDA kernels", "Reimplement a kernel in Triton", "Build a roofline analysis", "Profile an LLM inference workload", "Implement a fused attention-related kernel"], "resources": ["CUDA C++ Programming Guide", "Programming Massively Parallel Processors", "Triton and CUTLASS source code"]}, {"id": "ml-systems", "title": "ML Systems", "goal": "Understand the complete path from model graph to efficient serving and training.", "items": ["PyTorch internals", "torch.compile", "XLA", "ONNX", "TensorRT", "Continuous batching", "KV-cache management", "Paged attention", "FlashAttention", "Quantization", "Speculative decoding", "Mixture-of-experts routing", "Serving reliability and observability"], "projects": ["Build a tiny inference engine", "Implement continuous batching", "Build a KV-cache block manager", "Reproduce an inference optimization paper", "Contribute to vLLM or another serving system"], "resources": ["vLLM source code", "PyTorch source code", "MLSys and systems-for-ML papers"]}, {"id": "rl-systems", "title": "Reinforcement Learning Systems", "goal": "Master the infrastructure that turns policies, environments, and feedback into scalable learning.", "items": ["RL fundamentals", "Rollout generation", "Environment execution", "Replay buffers", "On-policy and off-policy pipelines", "Distributed training", "Simulation infrastructure", "Evaluation systems", "Checkpointing", "Fault-tolerant workers", "Asynchronous actor-learner systems"], "projects": ["Build a distributed rollout engine", "Build a replay buffer service", "Implement a small actor-learner system", "Benchmark execution substrates for RL workloads", "Reproduce an RL systems paper"], "resources": ["IMPALA", "SEED RL", "AlphaStar", "OpenAI Five", "RL infrastructure papers"]}, {"id": "agent-runtime", "title": "Agent & AI Runtime Systems", "goal": "Develop original expertise in executing millions of intelligent, stateful workloads efficiently.", "items": ["Sandbox isolation", "Snapshotting and restoration", "Environment scheduling", "Agent orchestration", "State and filesystem management", "Tool execution reliability", "Multi-tenant isolation", "Cold-start optimization", "Long-horizon workload recovery", "Evaluation infrastructure", "Security boundaries for agents", "Cost and capacity modeling"], "projects": ["Design a production-grade sandbox runtime", "Build a snapshot-aware scheduler", "Create a benchmark suite for agent runtimes", "Publish original research on rollout infrastructure", "Develop an open-source agent execution primitive"], "resources": ["Firecracker and microVM literature", "Container and snapshotter internals", "Agent evaluation and execution systems papers"]}, {"id": "mathematics", "title": "Mathematics", "goal": "Build enough mathematical fluency to derive, critique, and invent systems and algorithms.", "items": ["Linear algebra", "Probability", "Statistics", "Optimization", "Information theory", "Graph theory", "Numerical methods", "Queueing theory"], "projects": ["Derive important ML systems equations by hand", "Model a queueing system", "Implement numerical algorithms from scratch"], "resources": ["Mathematics for Machine Learning", "Convex Optimization", "Introduction to Probability"]}, {"id": "craft", "title": "Engineering Craft & Communication", "goal": "Turn deep technical ability into trusted, visible, high-leverage impact.", "items": ["Python mastery", "C and C++", "Rust", "Go", "Profiling and benchmarking", "Experimental design", "Technical writing", "Paper reading", "Public speaking", "Open-source collaboration", "Research taste", "Technical leadership"], "projects": ["Publish one substantial technical artifact each quarter", "Read and summarize two papers per week", "Give technical talks", "Maintain a serious open-source project", "Mentor others and teach difficult systems concepts"], "resources": ["High-quality source code", "Conference talks", "Systems and ML research communities"]}];
+    const STORAGE_KEY = "ai-runtime-mastery-roadmap-v1";
+    const THEME_KEY = "ai-runtime-mastery-theme-v1";
+
+    const defaultState = () => ({ items: {}, notes: {} });
+    let state = loadState();
+
+    function loadState() {
+      try {
+        return { ...defaultState(), ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateStats();
+    }
+
+    function itemKey(domainId, section, index) {
+      return `${domainId}:${section}:${index}`;
+    }
+
+    function getItemState(key) {
+      return state.items[key] || { done: false, level: "Learning" };
+    }
+
+    function allTrackableItems() {
+      return roadmapData.flatMap(domain =>
+        [
+          ...domain.items.map((text, index) => ({ domain, section: "topics", text, index })),
+          ...domain.projects.map((text, index) => ({ domain, section: "projects", text, index }))
+        ]
+      );
+    }
+
+    function domainProgress(domain) {
+      const entries = [
+        ...domain.items.map((_, i) => getItemState(itemKey(domain.id, "topics", i))),
+        ...domain.projects.map((_, i) => getItemState(itemKey(domain.id, "projects", i)))
+      ];
+      const done = entries.filter(x => x.done).length;
+      return { done, total: entries.length, percent: entries.length ? Math.round(done / entries.length * 100) : 0 };
+    }
+
+    function createChecklist(domain, list, section) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "checklist";
+
+      list.forEach((text, index) => {
+        const key = itemKey(domain.id, section, index);
+        const current = getItemState(key);
+        const row = document.createElement("div");
+        row.className = "check-row" + (current.done ? " done" : "");
+        row.dataset.text = text.toLowerCase();
+        row.dataset.done = String(current.done);
+        row.dataset.level = current.level;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = current.done;
+        checkbox.setAttribute("aria-label", `Mark ${text} complete`);
+
+        const span = document.createElement("span");
+        span.className = "item-text";
+        span.textContent = text;
+
+        const select = document.createElement("select");
+        select.className = "level-select";
+        select.setAttribute("aria-label", `Knowledge level for ${text}`);
+        ["Learning", "Practiced", "Proficient", "Mastered"].forEach(level => {
+          const option = document.createElement("option");
+          option.value = level;
+          option.textContent = level;
+          option.selected = current.level === level;
+          select.appendChild(option);
+        });
+
+        checkbox.addEventListener("change", () => {
+          const existing = getItemState(key);
+          state.items[key] = { ...existing, done: checkbox.checked };
+          row.classList.toggle("done", checkbox.checked);
+          row.dataset.done = String(checkbox.checked);
+          saveState();
+          refreshDomainHeader(domain.id);
+          applyFilters();
+        });
+
+        select.addEventListener("change", () => {
+          const existing = getItemState(key);
+          state.items[key] = { ...existing, level: select.value };
+          row.dataset.level = select.value;
+          saveState();
+          applyFilters();
+        });
+
+        row.append(checkbox, span, select);
+        wrapper.appendChild(row);
+      });
+
+      return wrapper;
+    }
+
+    function renderRoadmap() {
+      const root = document.getElementById("roadmap");
+      root.innerHTML = "";
+
+      roadmapData.forEach(domain => {
+        const section = document.createElement("section");
+        section.className = "domain";
+        section.id = domain.id;
+        section.dataset.domain = domain.id;
+        section.dataset.search = [
+          domain.title, domain.goal, ...domain.items, ...domain.projects, ...domain.resources
+        ].join(" ").toLowerCase();
+
+        const p = domainProgress(domain);
+        section.innerHTML = `
+          <div class="domain-header">
+            <div>
+              <h2 class="domain-title">${domain.title}</h2>
+              <p class="goal">${domain.goal}</p>
+            </div>
+            <div class="domain-progress">
+              <div class="percent" data-percent>${p.percent}%</div>
+              <div class="progress-track"><div class="progress-bar" data-bar style="width:${p.percent}%"></div></div>
+              <small data-count>${p.done} / ${p.total} complete</small>
+            </div>
+          </div>
+          <div class="tabs" role="tablist">
+            <button class="tab active" type="button" data-tab="topics">Topics</button>
+            <button class="tab" type="button" data-tab="projects">Projects</button>
+            <button class="tab" type="button" data-tab="resources">Resources</button>
+            <button class="tab" type="button" data-tab="notes">Notes</button>
+          </div>
+        `;
+
+        const topicsPanel = document.createElement("div");
+        topicsPanel.className = "tab-panel";
+        topicsPanel.dataset.panel = "topics";
+        topicsPanel.appendChild(createChecklist(domain, domain.items, "topics"));
+
+        const projectsPanel = document.createElement("div");
+        projectsPanel.className = "tab-panel";
+        projectsPanel.dataset.panel = "projects";
+        projectsPanel.hidden = true;
+        projectsPanel.appendChild(createChecklist(domain, domain.projects, "projects"));
+
+        const resourcesPanel = document.createElement("div");
+        resourcesPanel.className = "tab-panel";
+        resourcesPanel.dataset.panel = "resources";
+        resourcesPanel.hidden = true;
+        const ul = document.createElement("ul");
+        ul.className = "resource-list";
+        domain.resources.forEach(resource => {
+          const li = document.createElement("li");
+          li.textContent = resource;
+          ul.appendChild(li);
+        });
+        resourcesPanel.appendChild(ul);
+
+        const notesPanel = document.createElement("div");
+        notesPanel.className = "tab-panel";
+        notesPanel.dataset.panel = "notes";
+        notesPanel.hidden = true;
+        const textarea = document.createElement("textarea");
+        textarea.className = "notes";
+        textarea.placeholder = "Record explanations, links, experiments, questions, and evidence of mastery...";
+        textarea.value = state.notes[domain.id] || "";
+        textarea.addEventListener("input", () => {
+          state.notes[domain.id] = textarea.value;
+          saveState();
+        });
+        notesPanel.appendChild(textarea);
+
+        section.append(topicsPanel, projectsPanel, resourcesPanel, notesPanel);
+
+        section.querySelectorAll(".tab").forEach(button => {
+          button.addEventListener("click", () => {
+            section.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b === button));
+            section.querySelectorAll(".tab-panel").forEach(panel => {
+              panel.hidden = panel.dataset.panel !== button.dataset.tab;
+            });
+          });
+        });
+
+        root.appendChild(section);
+      });
+
+      populateDomainControls();
+      updateStats();
+      applyFilters();
+    }
+
+    function populateDomainControls() {
+      const filter = document.getElementById("domainFilter");
+      const nav = document.getElementById("domainNav");
+      filter.innerHTML = '<option value="all">All domains</option>';
+      nav.innerHTML = "";
+
+      roadmapData.forEach(domain => {
+        const option = document.createElement("option");
+        option.value = domain.id;
+        option.textContent = domain.title;
+        filter.appendChild(option);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = domain.title;
+        button.addEventListener("click", () => {
+          document.getElementById(domain.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        nav.appendChild(button);
+      });
+    }
+
+    function refreshDomainHeader(domainId) {
+      const domain = roadmapData.find(d => d.id === domainId);
+      const section = document.getElementById(domainId);
+      if (!domain || !section) return;
+      const p = domainProgress(domain);
+      section.querySelector("[data-percent]").textContent = `${p.percent}%`;
+      section.querySelector("[data-bar]").style.width = `${p.percent}%`;
+      section.querySelector("[data-count]").textContent = `${p.done} / ${p.total} complete`;
+    }
+
+    function updateStats() {
+      const all = allTrackableItems();
+      const states = all.map(x => getItemState(itemKey(x.domain.id, x.section, x.index)));
+      const done = states.filter(x => x.done).length;
+      const mastered = states.filter(x => x.level === "Mastered").length;
+      const active = roadmapData.filter(domain => {
+        const p = domainProgress(domain);
+        return p.done > 0 && p.done < p.total;
+      }).length;
+      const percent = all.length ? Math.round(done / all.length * 100) : 0;
+
+      document.getElementById("overallPercent").textContent = `${percent}%`;
+      document.getElementById("overallBar").style.width = `${percent}%`;
+      document.getElementById("topicsDone").textContent = `${done} / ${all.length}`;
+      document.getElementById("activeDomains").textContent = active;
+      document.getElementById("masteredTopics").textContent = mastered;
+    }
+
+    function applyFilters() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      const status = document.getElementById("statusFilter").value;
+      const selectedDomain = document.getElementById("domainFilter").value;
+      let visibleDomains = 0;
+
+      document.querySelectorAll(".domain").forEach(section => {
+        const domainMatch = selectedDomain === "all" || section.dataset.domain === selectedDomain;
+        const broadSearchMatch = !query || section.dataset.search.includes(query);
+        let anyVisibleRow = false;
+
+        section.querySelectorAll(".check-row").forEach(row => {
+          const searchMatch = !query || row.dataset.text.includes(query) || broadSearchMatch;
+          const done = row.dataset.done === "true";
+          const level = row.dataset.level;
+          const statusMatch =
+            status === "all" ||
+            (status === "complete" && done) ||
+            (status === "incomplete" && !done) ||
+            (status === "mastered" && level === "Mastered");
+          const show = searchMatch && statusMatch;
+          row.classList.toggle("hidden", !show);
+          if (show) anyVisibleRow = true;
+        });
+
+        const sectionShow = domainMatch && broadSearchMatch && (status === "all" || anyVisibleRow);
+        section.classList.toggle("hidden", !sectionShow);
+        if (sectionShow) visibleDomains++;
+      });
+
+      document.getElementById("emptyState").classList.toggle("hidden", visibleDomains > 0);
+    }
+
+    document.getElementById("search").addEventListener("input", applyFilters);
+    document.getElementById("statusFilter").addEventListener("change", applyFilters);
+    document.getElementById("domainFilter").addEventListener("change", applyFilters);
+
+    document.getElementById("themeBtn").addEventListener("click", () => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === "light" ? "dark" : "light";
+      root.dataset.theme = next;
+      localStorage.setItem(THEME_KEY, next);
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ai-runtime-roadmap-progress-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById("importBtn").addEventListener("click", () => {
+      document.getElementById("importFile").click();
+    });
+
+    document.getElementById("importFile").addEventListener("change", async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const imported = parsed.state || parsed;
+        if (!imported.items || !imported.notes) throw new Error("Invalid roadmap file");
+        state = imported;
+        saveState();
+        renderRoadmap();
+      } catch (error) {
+        alert("Could not import this file. Make sure it is a progress export from this roadmap.");
+      }
+      event.target.value = "";
+    });
+
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    const resetDialog = document.getElementById("resetDialog");
+    document.getElementById("resetBtn").addEventListener("click", () => resetDialog.showModal());
+    document.getElementById("cancelReset").addEventListener("click", () => resetDialog.close());
+    document.getElementById("confirmReset").addEventListener("click", () => {
+      state = defaultState();
+      localStorage.removeItem(STORAGE_KEY);
+      resetDialog.close();
+      renderRoadmap();
+    });
+
+    document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "dark";
+    renderRoadmap();
+  </script>
+</body>
+</html>

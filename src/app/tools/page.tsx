@@ -19,7 +19,7 @@ const sections: {
         href: "/tools/ttfb",
       },
       {
-        name: "Learning Roadmap",
+        name: "Learning Tracker",
         description: "Concepts encountered while working, tracked as a checklist.",
         href: "/tools/roadmap",
       },
@@ -29,9 +29,14 @@ const sections: {
         href: "/interview-tool",
       },
       {
-        name: "Daytona Branching Demo",
-        description: "Interactive demo showing how sandbox snapshots let agents branch from saved progress.",
+        name: "Go-Explore Demo",
+        description: "How sandbox snapshots let agents branch from saved progress.",
         href: "/daytona-search-demo",
+      },
+      {
+        name: "Eff. Exec. AI.",
+        description: "Learning plan.",
+        href: "/learning-roadmap-route",
       },
     ],
   },
