@@ -1,4 +1,6 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export const TOOLS_AUTH_COOKIE = "tools_auth";
 
 export function verifyToolsPassword(
   submittedPassword: unknown,
@@ -15,4 +17,55 @@ export function verifyToolsPassword(
     submitted.length === configured.length &&
     timingSafeEqual(submitted, configured)
   );
+}
+
+export function createToolsAuthToken(
+  configuredPassword = process.env.SEO_TOOLS_PASSWORD,
+) {
+  if (!configuredPassword) {
+    return "";
+  }
+
+  return createHmac("sha256", configuredPassword)
+    .update("graviet-tools-auth")
+    .digest("hex");
+}
+
+export function verifyToolsAuthToken(
+  submittedToken: unknown,
+  configuredPassword = process.env.SEO_TOOLS_PASSWORD,
+) {
+  if (typeof submittedToken !== "string") {
+    return false;
+  }
+
+  const configuredToken = createToolsAuthToken(configuredPassword);
+
+  if (!configuredToken) {
+    return false;
+  }
+
+  const submitted = Buffer.from(submittedToken);
+  const configured = Buffer.from(configuredToken);
+
+  return (
+    submitted.length === configured.length &&
+    timingSafeEqual(submitted, configured)
+  );
+}
+
+export function getCookieValue(cookieHeader: string | null, name: string) {
+  if (!cookieHeader) {
+    return null;
+  }
+
+  const cookies = cookieHeader.split(";").map((cookie) => cookie.trim());
+  const prefix = `${name}=`;
+  const match = cookies.find((cookie) => cookie.startsWith(prefix));
+
+  return match ? decodeURIComponent(match.slice(prefix.length)) : null;
+}
+
+export function verifyToolsAuthCookie(cookieHeader: string | null) {
+  return verifyToolsAuthToken(getCookieValue(cookieHeader, TOOLS_AUTH_COOKIE));
 }

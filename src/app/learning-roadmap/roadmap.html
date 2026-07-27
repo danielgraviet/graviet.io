@@ -41,7 +41,7 @@
       color: var(--text);
       line-height: 1.5;
     }
-    button, input, select, textarea { font: inherit; }
+    button, input, select { font: inherit; }
     button { cursor: pointer; }
     .shell { width: min(1440px, 100%); margin: 0 auto; padding: 24px; }
     .topbar {
@@ -52,6 +52,7 @@
     h2, h3 { margin-top: 0; }
     .subtitle { margin: 0; color: var(--muted); max-width: 820px; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .sync-status { flex-basis: 100%; color: var(--muted); font-size: .82rem; text-align: right; }
     .btn {
       border: 1px solid var(--border); background: var(--panel); color: var(--text);
       border-radius: 10px; padding: 9px 12px;
@@ -118,10 +119,27 @@
       border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
       color: var(--text); padding: 5px 6px; width: 100%;
     }
-    .notes {
-      width: 100%; min-height: 130px; resize: vertical; border: 1px solid var(--border);
-      border-radius: 10px; background: var(--panel-2); color: var(--text); padding: 10px;
+    .topic-notes { display: grid; gap: 7px; }
+    .topic-note-row {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 10px; background: var(--panel-2);
     }
+    .topic-note-title { min-width: 0; }
+    .notes-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+    .notes-link {
+      display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--panel-2); color: var(--text);
+      padding: 10px 12px; text-decoration: none; min-height: 42px;
+    }
+    .notes-link:hover { border-color: var(--accent); }
+    .icon-btn {
+      width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 9px; background: var(--panel); color: var(--text);
+      font-weight: 750;
+    }
+    .icon-btn:hover { border-color: var(--accent); }
+    .note-editor { display: grid; grid-template-columns: minmax(180px, 360px) auto auto; gap: 8px; align-items: center; }
+    .note-editor .field { min-width: 0; }
     .resource-list, .project-list { margin: 0; padding-left: 20px; }
     .resource-list li, .project-list li { margin: 7px 0; }
     .milestone-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
@@ -149,11 +167,15 @@
       .shell { padding: 14px; }
       .topbar { flex-direction: column; }
       .actions { justify-content: flex-start; }
+      .sync-status { text-align: left; }
       .stats { grid-template-columns: 1fr 1fr; }
       .check-row { grid-template-columns: 24px minmax(0,1fr); }
       .level-select { grid-column: 2; width: auto; }
       .domain-header { flex-direction: column; }
       .domain-progress { text-align: left; width: 100%; }
+      .topic-note-row { grid-template-columns: 1fr; align-items: start; }
+      .notes-actions { justify-content: flex-start; width: 100%; }
+      .note-editor { grid-template-columns: 1fr; width: 100%; }
     }
     @media print {
       .sidebar, .actions, .tabs, .footer-note { display: none !important; }
@@ -172,12 +194,14 @@
         <p class="subtitle">A multi-year tracker for becoming world-class at efficient execution of intelligent systems—from hardware and operating systems to GPU, ML, RL, and agent runtimes.</p>
       </div>
       <div class="actions">
+        <button class="btn" id="storageBtn" type="button">Connect storage</button>
         <button class="btn" id="themeBtn" type="button">Toggle theme</button>
         <button class="btn" id="exportBtn" type="button">Export progress</button>
         <button class="btn" id="importBtn" type="button">Import progress</button>
         <button class="btn" id="printBtn" type="button">Print</button>
         <button class="btn danger" id="resetBtn" type="button">Reset</button>
         <input id="importFile" type="file" accept=".json,application/json" hidden />
+        <span class="sync-status" id="syncStatus">Local browser storage</span>
       </div>
     </header>
 
@@ -221,15 +245,26 @@
       </main>
     </div>
 
-    <p class="footer-note">Progress is saved automatically in your browser. Export a backup periodically so the roadmap can move with you.</p>
+    <p class="footer-note">Progress and Notion links are saved automatically in your browser. Note contents live in Notion.</p>
   </div>
 
   <dialog id="resetDialog">
     <h3>Reset all progress?</h3>
-    <p>This clears completion, mastery levels, and notes stored in this browser. Export first if you may want a backup.</p>
+    <p>This clears completion, mastery levels, and saved Notion links stored in this browser. Export first if you may want a backup.</p>
     <div class="dialog-actions">
       <button class="btn" id="cancelReset" type="button">Cancel</button>
       <button class="btn danger" id="confirmReset" type="button">Reset everything</button>
+    </div>
+  </dialog>
+
+  <dialog id="storageDialog">
+    <h3>Connect durable storage</h3>
+    <p>Enter the tools password to load and save this roadmap in Neon.</p>
+    <label for="storagePassword">Tools password</label>
+    <input class="field" id="storagePassword" type="password" autocomplete="current-password" />
+    <div class="dialog-actions">
+      <button class="btn" id="cancelStorage" type="button">Cancel</button>
+      <button class="btn primary" id="confirmStorage" type="button">Connect</button>
     </div>
   </dialog>
 
@@ -237,21 +272,159 @@
     const roadmapData = [{"id": "architecture", "title": "Computer Architecture", "goal": "Understand what the hardware is actually doing.", "items": ["CPU architecture and instruction pipelines", "Memory hierarchy and cache behavior", "Cache coherence", "Branch prediction", "SIMD and vectorization", "NUMA", "PCIe and DMA", "SSD and storage internals", "Hardware performance counters"], "projects": ["Write a cache benchmark comparing access patterns", "Profile branch prediction and SIMD effects", "Build a small memory-latency visualization"], "resources": ["Computer Systems: A Programmer's Perspective", "Computer Architecture: A Quantitative Approach"]}, {"id": "operating-systems", "title": "Operating Systems", "goal": "Understand the abstractions underneath containers, runtimes, and execution environments.", "items": ["Processes and threads", "CPU scheduling", "Virtual memory and paging", "mmap and the page cache", "Synchronization and lock-free basics", "epoll, kqueue, and io_uring", "Filesystems", "Linux namespaces", "cgroups", "Signals and process lifecycle"], "projects": ["Build a tiny Unix shell", "Implement a memory allocator", "Build a thread pool", "Create a toy process scheduler", "Build a minimal container with namespaces and cgroups"], "resources": ["Operating Systems: Three Easy Pieces", "The Linux Programming Interface"]}, {"id": "networking", "title": "Networking", "goal": "Reason about latency, throughput, failure, and communication across machines.", "items": ["TCP/IP", "Congestion control", "DNS", "HTTP/1.1, HTTP/2, and HTTP/3", "QUIC", "RPC and gRPC", "Load balancing", "Service discovery", "Network namespaces and virtual networking", "Kernel bypass and RDMA basics"], "projects": ["Build an HTTP server", "Build a small RPC framework", "Build a reverse proxy", "Measure network tail latency under load"], "resources": ["Computer Networking: A Top-Down Approach", "Beej's Guide to Network Programming"]}, {"id": "distributed-systems", "title": "Distributed Systems", "goal": "Design systems that remain useful when machines, networks, and assumptions fail.", "items": ["Replication and partitioning", "Consistency models", "Consensus", "Raft and Paxos", "CAP and its limitations", "Distributed transactions", "Fault tolerance", "Schedulers and placement", "Backpressure", "Observability in distributed systems"], "projects": ["Implement Raft", "Build a replicated key-value store", "Build a distributed task scheduler", "Run failure-injection experiments"], "resources": ["Designing Data-Intensive Applications", "MIT 6.5840 Distributed Systems", "Google, Amazon, and Meta systems papers"]}, {"id": "cloud-runtime", "title": "Cloud Runtime & Kubernetes", "goal": "Understand Kubernetes and containers as runtime systems, not just deployment tools.", "items": ["Kubernetes control-plane architecture", "kubelet", "Scheduler", "Controller manager", "etcd", "OCI image and runtime specifications", "containerd and runc", "CRI", "CNI", "CSI", "Image distribution and snapshotters", "Autoscaling and cluster scheduling"], "projects": ["Write a Kubernetes scheduler plugin", "Build a minimal container runtime", "Trace pod startup end to end", "Benchmark image pulls and snapshot restoration", "Contribute to Kubernetes, containerd, or related projects"], "resources": ["Kubernetes source code", "OCI specifications", "containerd and runc source code"]}, {"id": "compilers", "title": "Compilers & Programming Languages", "goal": "Understand how high-level programs become efficient machine execution.", "items": ["Lexing and parsing", "Interpreters and bytecode", "Intermediate representations", "SSA", "Optimization passes", "JIT compilation", "LLVM", "Tracing compilers", "Automatic differentiation compilers"], "projects": ["Build a small interpreter", "Build a bytecode VM", "Write an LLVM optimization pass", "Create a toy tensor compiler"], "resources": ["Crafting Interpreters", "Engineering a Compiler", "LLVM documentation"]}, {"id": "gpu-systems", "title": "GPU Systems", "goal": "Make accelerator behavior intuitive enough to diagnose and improve real workloads.", "items": ["GPU execution model", "Warps and scheduling", "Memory hierarchy", "Occupancy", "Tensor cores", "CUDA programming", "Kernel fusion", "Triton", "CUTLASS", "NCCL", "NVLink and multi-GPU communication", "GPU profiling"], "projects": ["Write and optimize CUDA kernels", "Reimplement a kernel in Triton", "Build a roofline analysis", "Profile an LLM inference workload", "Implement a fused attention-related kernel"], "resources": ["CUDA C++ Programming Guide", "Programming Massively Parallel Processors", "Triton and CUTLASS source code"]}, {"id": "ml-systems", "title": "ML Systems", "goal": "Understand the complete path from model graph to efficient serving and training.", "items": ["PyTorch internals", "torch.compile", "XLA", "ONNX", "TensorRT", "Continuous batching", "KV-cache management", "Paged attention", "FlashAttention", "Quantization", "Speculative decoding", "Mixture-of-experts routing", "Serving reliability and observability"], "projects": ["Build a tiny inference engine", "Implement continuous batching", "Build a KV-cache block manager", "Reproduce an inference optimization paper", "Contribute to vLLM or another serving system"], "resources": ["vLLM source code", "PyTorch source code", "MLSys and systems-for-ML papers"]}, {"id": "rl-systems", "title": "Reinforcement Learning Systems", "goal": "Master the infrastructure that turns policies, environments, and feedback into scalable learning.", "items": ["RL fundamentals", "Rollout generation", "Environment execution", "Replay buffers", "On-policy and off-policy pipelines", "Distributed training", "Simulation infrastructure", "Evaluation systems", "Checkpointing", "Fault-tolerant workers", "Asynchronous actor-learner systems"], "projects": ["Build a distributed rollout engine", "Build a replay buffer service", "Implement a small actor-learner system", "Benchmark execution substrates for RL workloads", "Reproduce an RL systems paper"], "resources": ["IMPALA", "SEED RL", "AlphaStar", "OpenAI Five", "RL infrastructure papers"]}, {"id": "agent-runtime", "title": "Agent & AI Runtime Systems", "goal": "Develop original expertise in executing millions of intelligent, stateful workloads efficiently.", "items": ["Sandbox isolation", "Snapshotting and restoration", "Environment scheduling", "Agent orchestration", "State and filesystem management", "Tool execution reliability", "Multi-tenant isolation", "Cold-start optimization", "Long-horizon workload recovery", "Evaluation infrastructure", "Security boundaries for agents", "Cost and capacity modeling"], "projects": ["Design a production-grade sandbox runtime", "Build a snapshot-aware scheduler", "Create a benchmark suite for agent runtimes", "Publish original research on rollout infrastructure", "Develop an open-source agent execution primitive"], "resources": ["Firecracker and microVM literature", "Container and snapshotter internals", "Agent evaluation and execution systems papers"]}, {"id": "mathematics", "title": "Mathematics", "goal": "Build enough mathematical fluency to derive, critique, and invent systems and algorithms.", "items": ["Linear algebra", "Probability", "Statistics", "Optimization", "Information theory", "Graph theory", "Numerical methods", "Queueing theory"], "projects": ["Derive important ML systems equations by hand", "Model a queueing system", "Implement numerical algorithms from scratch"], "resources": ["Mathematics for Machine Learning", "Convex Optimization", "Introduction to Probability"]}, {"id": "craft", "title": "Engineering Craft & Communication", "goal": "Turn deep technical ability into trusted, visible, high-leverage impact.", "items": ["Python mastery", "C and C++", "Rust", "Go", "Profiling and benchmarking", "Experimental design", "Technical writing", "Paper reading", "Public speaking", "Open-source collaboration", "Research taste", "Technical leadership"], "projects": ["Publish one substantial technical artifact each quarter", "Read and summarize two papers per week", "Give technical talks", "Maintain a serious open-source project", "Mentor others and teach difficult systems concepts"], "resources": ["High-quality source code", "Conference talks", "Systems and ML research communities"]}];
     const STORAGE_KEY = "ai-runtime-mastery-roadmap-v1";
     const THEME_KEY = "ai-runtime-mastery-theme-v1";
+    const PASSWORD_KEY = "ai-runtime-mastery-storage-password-v1";
+    const DIRTY_KEY = "ai-runtime-mastery-dirty-v1";
+    const PROGRESS_API = "/api/learning-roadmap/progress";
 
-    const defaultState = () => ({ items: {}, notes: {} });
+    const defaultState = () => ({ items: {}, noteLinks: {} });
     let state = loadState();
+    let remoteSaveTimer = null;
+    let remoteStorageEnabled = false;
+
+    function normalizeState(value = {}) {
+      const input = value && typeof value === "object" ? value : {};
+      return { ...defaultState(), items: input.items || {}, noteLinks: input.noteLinks || {} };
+    }
 
     function loadState() {
       try {
-        return { ...defaultState(), ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+        return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"));
       } catch {
         return defaultState();
       }
     }
 
-    function saveState() {
+    function persistLocalState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       updateStats();
+    }
+
+    function saveState(options = {}) {
+      localStorage.setItem(DIRTY_KEY, "1");
+      persistLocalState();
+      if (options.remote !== false) {
+        scheduleRemoteSave();
+      }
+    }
+
+    function hasStateData(value) {
+      return Object.keys(value.items || {}).length > 0 || Object.keys(value.noteLinks || {}).length > 0;
+    }
+
+    function mergeStates(remote, local) {
+      return normalizeState({
+        items: { ...(remote.items || {}), ...(local.items || {}) },
+        noteLinks: { ...(remote.noteLinks || {}), ...(local.noteLinks || {}) }
+      });
+    }
+
+    function getStoragePassword() {
+      return localStorage.getItem(PASSWORD_KEY) || "";
+    }
+
+    function setSyncStatus(message) {
+      const status = document.getElementById("syncStatus");
+      if (status) status.textContent = message;
+    }
+
+    function updateStorageUi() {
+      const connected = remoteStorageEnabled || Boolean(getStoragePassword());
+      const button = document.getElementById("storageBtn");
+      if (button) button.textContent = connected ? "Reconnect storage" : "Connect storage";
+      if (!connected) setSyncStatus("Local browser storage");
+    }
+
+    async function fetchRemoteState(password) {
+      const headers = password ? { "x-tools-password": password } : {};
+      const response = await fetch(PROGRESS_API, {
+        credentials: "same-origin",
+        headers
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to load durable progress.");
+      }
+
+      return normalizeState(payload.state);
+    }
+
+    async function saveRemoteStateNow() {
+      const password = getStoragePassword();
+      if (!password && !remoteStorageEnabled) {
+        setSyncStatus("Local browser storage");
+        return false;
+      }
+
+      setSyncStatus("Saving to Neon...");
+
+      try {
+        const response = await fetch(PROGRESS_API, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ password: password || undefined, state })
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to save durable progress.");
+        }
+
+        state = normalizeState(payload.state);
+        remoteStorageEnabled = true;
+        persistLocalState();
+        localStorage.removeItem(DIRTY_KEY);
+        updateStorageUi();
+        setSyncStatus("Saved to Neon");
+        return true;
+      } catch (error) {
+        setSyncStatus("Neon save failed; local copy kept");
+        return false;
+      }
+    }
+
+    function scheduleRemoteSave() {
+      if (!getStoragePassword() && !remoteStorageEnabled) {
+        setSyncStatus("Local browser storage");
+        return;
+      }
+
+      clearTimeout(remoteSaveTimer);
+      remoteSaveTimer = setTimeout(saveRemoteStateNow, 600);
+    }
+
+    async function connectStorage(password, mode = "merge") {
+      const localState = state;
+      setSyncStatus("Loading from Neon...");
+
+      try {
+        const remoteState = await fetchRemoteState(password);
+        remoteStorageEnabled = true;
+        state =
+          mode === "local"
+            ? localState
+            : mode === "merge" && hasStateData(localState)
+              ? mergeStates(remoteState, localState)
+              : remoteState;
+        persistLocalState();
+        renderRoadmap();
+
+        if (mode === "local" || (mode === "merge" && hasStateData(localState))) {
+          await saveRemoteStateNow();
+        } else {
+          localStorage.removeItem(DIRTY_KEY);
+          updateStorageUi();
+          setSyncStatus("Loaded from Neon");
+        }
+        return true;
+      } catch (error) {
+        localStorage.removeItem(PASSWORD_KEY);
+        remoteStorageEnabled = false;
+        updateStorageUi();
+        setSyncStatus(error.message || "Could not connect to Neon");
+        return false;
+      }
     }
 
     function itemKey(domainId, section, index) {
@@ -338,6 +511,115 @@
       return wrapper;
     }
 
+    function createTopicNoteRow(domain, topic, index) {
+      const key = itemKey(domain.id, "topics", index);
+      const row = document.createElement("div");
+      row.className = "topic-note-row";
+
+      const title = document.createElement("span");
+      title.className = "topic-note-title";
+      title.textContent = topic;
+
+      const actions = document.createElement("div");
+      actions.className = "notes-actions";
+      let editing = false;
+
+      const renderActions = () => {
+        actions.innerHTML = "";
+        const savedUrl = state.noteLinks[key] || "";
+
+        if (editing) {
+          const editor = document.createElement("div");
+          editor.className = "note-editor";
+
+          const input = document.createElement("input");
+          input.className = "field";
+          input.type = "url";
+          input.placeholder = "https://www.notion.so/...";
+          input.value = savedUrl;
+          input.setAttribute("aria-label", `Notion link for ${topic}`);
+
+          const saveButton = document.createElement("button");
+          saveButton.className = "btn primary";
+          saveButton.type = "button";
+          saveButton.textContent = "Save";
+
+          const cancelButton = document.createElement("button");
+          cancelButton.className = "btn";
+          cancelButton.type = "button";
+          cancelButton.textContent = "Cancel";
+
+          const saveLink = () => {
+            const value = normalizeNoteUrl(input.value);
+            if (value) {
+              state.noteLinks[key] = value;
+            } else {
+              delete state.noteLinks[key];
+            }
+            editing = false;
+            saveState();
+            renderActions();
+          };
+
+          saveButton.addEventListener("click", saveLink);
+          input.addEventListener("keydown", event => {
+            if (event.key === "Enter") saveLink();
+            if (event.key === "Escape") {
+              editing = false;
+              renderActions();
+            }
+          });
+          cancelButton.addEventListener("click", () => {
+            editing = false;
+            renderActions();
+          });
+
+          editor.append(input, saveButton, cancelButton);
+          actions.appendChild(editor);
+          requestAnimationFrame(() => input.focus());
+          return;
+        }
+
+        if (savedUrl) {
+          const openLink = document.createElement("a");
+          openLink.className = "notes-link";
+          openLink.href = normalizeNoteUrl(savedUrl);
+          openLink.target = "_blank";
+          openLink.rel = "noopener noreferrer";
+          openLink.textContent = "Open";
+          openLink.setAttribute("aria-label", `Open Notion notes for ${topic}`);
+
+          const editButton = document.createElement("button");
+          editButton.className = "btn";
+          editButton.type = "button";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", () => {
+            editing = true;
+            renderActions();
+          });
+
+          actions.append(openLink, editButton);
+          return;
+        }
+
+        const addButton = document.createElement("button");
+        addButton.className = "icon-btn";
+        addButton.type = "button";
+        addButton.textContent = "+";
+        addButton.title = `Add Notion link for ${topic}`;
+        addButton.setAttribute("aria-label", `Add Notion link for ${topic}`);
+        addButton.addEventListener("click", () => {
+          editing = true;
+          renderActions();
+        });
+        actions.appendChild(addButton);
+      };
+
+      renderActions();
+      row.append(title, actions);
+      return row;
+    }
+
     function renderRoadmap() {
       const root = document.getElementById("roadmap");
       root.innerHTML = "";
@@ -400,15 +682,13 @@
         notesPanel.className = "tab-panel";
         notesPanel.dataset.panel = "notes";
         notesPanel.hidden = true;
-        const textarea = document.createElement("textarea");
-        textarea.className = "notes";
-        textarea.placeholder = "Record explanations, links, experiments, questions, and evidence of mastery...";
-        textarea.value = state.notes[domain.id] || "";
-        textarea.addEventListener("input", () => {
-          state.notes[domain.id] = textarea.value;
-          saveState();
+
+        const notesList = document.createElement("div");
+        notesList.className = "topic-notes";
+        domain.items.forEach((topic, index) => {
+          notesList.appendChild(createTopicNoteRow(domain, topic, index));
         });
-        notesPanel.appendChild(textarea);
+        notesPanel.appendChild(notesList);
 
         section.append(topicsPanel, projectsPanel, resourcesPanel, notesPanel);
 
@@ -459,6 +739,12 @@
       section.querySelector("[data-percent]").textContent = `${p.percent}%`;
       section.querySelector("[data-bar]").style.width = `${p.percent}%`;
       section.querySelector("[data-count]").textContent = `${p.done} / ${p.total} complete`;
+    }
+
+    function normalizeNoteUrl(value) {
+      const trimmed = value.trim();
+      if (!trimmed) return "";
+      return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
     }
 
     function updateStats() {
@@ -548,8 +834,8 @@
       try {
         const parsed = JSON.parse(await file.text());
         const imported = parsed.state || parsed;
-        if (!imported.items || !imported.notes) throw new Error("Invalid roadmap file");
-        state = imported;
+        if (!imported.items) throw new Error("Invalid roadmap file");
+        state = normalizeState(imported);
         saveState();
         renderRoadmap();
       } catch (error) {
@@ -565,13 +851,42 @@
     document.getElementById("cancelReset").addEventListener("click", () => resetDialog.close());
     document.getElementById("confirmReset").addEventListener("click", () => {
       state = defaultState();
-      localStorage.removeItem(STORAGE_KEY);
+      saveState();
       resetDialog.close();
       renderRoadmap();
     });
 
+    const storageDialog = document.getElementById("storageDialog");
+    const storagePassword = document.getElementById("storagePassword");
+    document.getElementById("storageBtn").addEventListener("click", async () => {
+      const connected = await connectStorage(
+        getStoragePassword(),
+        localStorage.getItem(DIRTY_KEY) === "1" ? "local" : "remote"
+      );
+      if (connected) return;
+
+      storagePassword.value = "";
+      storageDialog.showModal();
+      requestAnimationFrame(() => storagePassword.focus());
+    });
+    document.getElementById("cancelStorage").addEventListener("click", () => storageDialog.close());
+    document.getElementById("confirmStorage").addEventListener("click", async () => {
+      const password = storagePassword.value;
+      if (!password) return;
+
+      localStorage.setItem(PASSWORD_KEY, password);
+      updateStorageUi();
+      storageDialog.close();
+      await connectStorage(password);
+    });
+
     document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "dark";
+    updateStorageUi();
     renderRoadmap();
+    connectStorage(
+      getStoragePassword(),
+      localStorage.getItem(DIRTY_KEY) === "1" ? "local" : "remote"
+    );
   </script>
 </body>
 </html>
