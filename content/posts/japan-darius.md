@@ -18,7 +18,7 @@ If you talked to a person from today about Japan and someone from the 1950s, you
 
 ![Imperial Japanese Army soldiers next to the Heroes of the Pacific game cover](/blog/japan-darius-rucker/japan-army-heroes-pacific.webp)
 
-I remember playing "Heroes of the Pacific" on the PS2 and always choosing the Zero to blow up American ships in mock bombing runs. To me, it was just a fun game to play after school, but in general, Japan was remembered for Zero fighters, kamikaze attacks, and the horrific treatment of prisoners of war.
+I remember playing "Heroes of the Pacific" on the PS2 and choosing the Zero as my plane in the various missions. To me, it was just a fun game to play after school, but in general, Japan was remembered for Zero fighters, kamikaze attacks, and the horrific treatment of prisoners of war.
 
 Then came one of the best rebrands in modern history: "Tokyo Drift."
 
