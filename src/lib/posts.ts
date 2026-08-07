@@ -33,6 +33,7 @@ function parsePost(filename: string, includeBody = false): Post {
     excerpt: data.excerpt ?? "",
     publishedAt: normalizeDate(data.publishedAt),
     tags: Array.isArray(data.tags) ? data.tags : [],
+    featured: data.featured === true,
     body: includeBody ? content : undefined,
   };
 }
@@ -50,6 +51,11 @@ export async function getAllPosts(): Promise<Post[]> {
 
 export async function getLatestPosts(count = 3): Promise<Post[]> {
   return (await getAllPosts()).slice(0, count);
+}
+
+export async function getFeaturedPost(): Promise<Post | null> {
+  const posts = await getAllPosts();
+  return posts.find((p) => p.featured) ?? null;
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {

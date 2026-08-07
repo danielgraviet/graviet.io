@@ -152,7 +152,7 @@ tags: [AI, Writing]
 
 Use [`content/posts/hello-world.md`](/Users/danielgraviet/Desktop/projects/graviet.io/content/posts/hello-world.md) as the canonical example for structure and tone of frontmatter.
 
-## Blog Image Style Guide TESTING
+## Blog Image Style Guide
 
 Use a consistent editorial illustration style for generated blog images:
 

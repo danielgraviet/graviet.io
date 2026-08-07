@@ -5,6 +5,7 @@ export interface Post {
   excerpt: string;
   publishedAt: string;
   tags: string[];
+  featured: boolean;
   body?: string;
 }
 

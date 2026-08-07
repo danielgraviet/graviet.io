@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Spline from "@splinetool/react-spline/next";
 import NoScroll from "@/components/NoScroll";
 import {
   Home as HomeIcon,
@@ -30,16 +29,18 @@ export default function Home() {
   return (
     <section className="relative flex h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-6 pb-20">
       <NoScroll />
-      <div className="fixed -inset-24 z-0">
-        <Spline scene="https://prod.spline.design/bBIZB7uRZkRpkmlC/scene.splinecode" />
-      </div>
       <div className="relative z-10 grid w-full max-w-xs grid-cols-3 gap-3">
         {gridItems.map(({ href, label, Icon }) => (
           <Link
             key={label}
             href={href}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background/60 py-6 text-text-secondary backdrop-blur-sm transition-colors hover:border-foreground/30 hover:text-foreground"
+            className="relative flex flex-col items-center gap-2 rounded-2xl border border-border bg-background/60 py-6 text-text-secondary backdrop-blur-sm transition-colors hover:border-foreground/30 hover:text-foreground"
           >
+            {label === "Blog" && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">
+                1
+              </span>
+            )}
             <Icon className="h-6 w-6" />
             <span className="text-xs font-semibold">
               {label}
