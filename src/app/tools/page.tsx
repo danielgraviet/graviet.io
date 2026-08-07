@@ -24,6 +24,11 @@ const sections: {
         href: "/tools/roadmap",
       },
       {
+        name: "Work Log",
+        description: "Daily work notes with tags, search, and a logging streak.",
+        href: "/tools/work-log",
+      },
+      {
         name: "Interview Timer",
         description: "Timed interview practice with prompts, phases, and notes.",
         href: "/interview-tool",
