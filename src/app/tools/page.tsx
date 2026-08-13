@@ -19,9 +19,10 @@ const sections: {
         href: "/tools/ttfb",
       },
       {
-        name: "Learning Tracker",
-        description: "Concepts encountered while working, tracked as a checklist.",
-        href: "/tools/roadmap",
+        name: "Learn",
+        description:
+          "AI Runtime Systems curriculum, custom subjects, and spaced-repetition quizzes.",
+        href: "/tools/learn",
       },
       {
         name: "Work Log",
@@ -37,11 +38,6 @@ const sections: {
         name: "Go-Explore Demo",
         description: "How sandbox snapshots let agents branch from saved progress.",
         href: "/daytona-search-demo",
-      },
-      {
-        name: "Eff. Exec. AI.",
-        description: "Learning plan.",
-        href: "/learning-roadmap-route",
       },
     ],
   },

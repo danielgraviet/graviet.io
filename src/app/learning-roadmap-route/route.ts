@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   createToolsAuthToken,
   TOOLS_AUTH_COOKIE,
@@ -8,6 +6,8 @@ import {
 } from "@/lib/tools-auth";
 
 export const runtime = "nodejs";
+
+const LEARN_PATH = "/tools/learn/ai-runtime-systems";
 
 function authPage(error = "") {
   return `<!DOCTYPE html>
@@ -58,20 +58,10 @@ function authPage(error = "") {
 </html>`;
 }
 
-async function roadmapHtml() {
-  const html = await readFile(
-    path.join(
-      process.cwd(),
-      "src/app/learning-roadmap/roadmap.html",
-    ),
-    "utf8",
-  );
-
-  return new Response(html, {
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-    },
-  });
+function redirectToLearn(request: Request, status: 302 | 303, extra?: Headers) {
+  const headers = extra ?? new Headers();
+  headers.set("Location", new URL(LEARN_PATH, request.url).toString());
+  return new Response(null, { status, headers });
 }
 
 export async function GET(request: Request) {
@@ -83,7 +73,7 @@ export async function GET(request: Request) {
     });
   }
 
-  return roadmapHtml();
+  return redirectToLearn(request, 302);
 }
 
 export async function POST(request: Request) {
@@ -101,12 +91,8 @@ export async function POST(request: Request) {
 
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
   const headers = new Headers({
-    Location: new URL("/learning-roadmap-route", request.url).toString(),
     "Set-Cookie": `${TOOLS_AUTH_COOKIE}=${encodeURIComponent(createToolsAuthToken())}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secure}`,
   });
 
-  return new Response(null, {
-    status: 303,
-    headers,
-  });
+  return redirectToLearn(request, 303, headers);
 }

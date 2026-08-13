@@ -10,6 +10,7 @@ const DISALLOW = [
   "/api/",
   "/agent/",
   "/oauth2/",
+  "/tools/learn",
   "/tools/roadmap",
   "/tools/work-log",
   "/learning-roadmap-route",
