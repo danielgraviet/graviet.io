@@ -202,6 +202,22 @@ export default function BudgetTool() {
     }
   }
 
+  async function disconnect() {
+    if (!window.confirm("Disconnect this bank item and delete its imported transactions from this budget?")) return;
+    setLoading(true);
+    try {
+      const result = await jsonFetch<{ remoteRemovalFailed: boolean }>("/api/tools/budget/connection", { method: "DELETE" });
+      setDashboard(null);
+      setAccounts([]);
+      setSelectedIds([]);
+      setError(result.remoteRemovalFailed ? "The local connection was removed. Plaid could not confirm remote removal, so revoke it in Plaid or Wells Fargo as well." : null);
+    } catch (disconnectError) {
+      setError(disconnectError instanceof Error ? disconnectError.message : "Unable to disconnect the account.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function changeCategory(transactionId: number, categoryId: number, saveRule = false) {
     try {
       await jsonFetch(`/api/tools/budget/transactions/${transactionId}`, {
@@ -249,7 +265,7 @@ export default function BudgetTool() {
   }
 
   if (dashboard.needsAccountSelection) {
-    return <AccountSelection accounts={accounts} selectedIds={selectedIds} setSelectedIds={setSelectedIds} loading={loading} error={error} onSave={() => void saveAccounts()} />;
+    return <AccountSelection accounts={accounts} selectedIds={selectedIds} setSelectedIds={setSelectedIds} loading={loading} error={error} onSave={() => void saveAccounts()} onDisconnect={() => void disconnect()} />;
   }
 
   return (
@@ -260,9 +276,9 @@ export default function BudgetTool() {
           <p className="min-w-40 text-center font-semibold">{monthLabel(month)}</p>
           <button aria-label="Next month" disabled={month >= currentMonth()} onClick={() => { const next = moveMonth(month, 1); setMonth(next); void loadDashboard(next); }} className="p-2 text-text-secondary hover:text-foreground disabled:opacity-30"><ChevronRight className="h-4 w-4" /></button>
         </div>
-        <button onClick={() => void sync()} disabled={loading} className="inline-flex h-9 items-center gap-2 border border-border px-3 text-sm font-semibold hover:border-foreground disabled:opacity-60">
+        <div className="flex gap-2"><button onClick={() => void sync()} disabled={loading} className="inline-flex h-9 items-center gap-2 border border-border px-3 text-sm font-semibold hover:border-foreground disabled:opacity-60">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh transactions
-        </button>
+        </button><button onClick={() => void disconnect()} disabled={loading} className="h-9 border border-border px-3 text-sm font-semibold text-text-secondary hover:border-foreground hover:text-foreground disabled:opacity-60">Disconnect account</button></div>
       </div>
       {error && <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -303,8 +319,8 @@ function ConnectState({ loading, error, onConnect }: { loading: boolean; error: 
   return <div className="max-w-2xl border-y border-border py-8"><Link2 className="mb-4 h-6 w-6 text-text-secondary" /><h2 className="text-xl font-semibold">Connect Wells Fargo</h2><p className="mt-2 max-w-xl leading-relaxed text-text-secondary">Link your shared debit or checking account through Wells Fargo’s secure sign-in flow. This app never sees or stores your Wells Fargo password.</p>{error && <p className="mt-4 text-sm text-red-700">{error}</p>}<button disabled={loading} onClick={onConnect} className="mt-5 inline-flex h-11 items-center gap-2 bg-foreground px-4 text-sm font-semibold text-background disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />} Connect Wells Fargo</button></div>;
 }
 
-function AccountSelection({ accounts, selectedIds, setSelectedIds, loading, error, onSave }: { accounts: BudgetAccount[]; selectedIds: string[]; setSelectedIds: (ids: string[]) => void; loading: boolean; error: string | null; onSave: () => void }) {
-  return <div className="max-w-2xl border-y border-border py-8"><h2 className="text-xl font-semibold">Choose accounts to include</h2><p className="mt-2 text-text-secondary">Only selected accounts will appear in your shared spending dashboard.</p><div className="mt-5 border-t border-border">{accounts.map((account) => { const checked = selectedIds.includes(account.plaidAccountId); return <label key={account.plaidAccountId} className="flex cursor-pointer items-center justify-between gap-4 border-b border-border py-4"><span><span className="block font-semibold">{account.name}{account.mask ? ` ··${account.mask}` : ""}</span><span className="text-sm text-text-secondary">{[account.type, account.subtype].filter(Boolean).join(" · ")}</span></span><input type="checkbox" checked={checked} onChange={() => setSelectedIds(checked ? selectedIds.filter((id) => id !== account.plaidAccountId) : [...selectedIds, account.plaidAccountId])} className="h-4 w-4 accent-black" /></label>; })}</div>{error && <p className="mt-4 text-sm text-red-700">{error}</p>}<button disabled={loading || selectedIds.length === 0} onClick={onSave} className="mt-5 inline-flex h-11 items-center gap-2 bg-foreground px-4 text-sm font-semibold text-background disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save and import 90 days</button></div>;
+function AccountSelection({ accounts, selectedIds, setSelectedIds, loading, error, onSave, onDisconnect }: { accounts: BudgetAccount[]; selectedIds: string[]; setSelectedIds: (ids: string[]) => void; loading: boolean; error: string | null; onSave: () => void; onDisconnect: () => void }) {
+  return <div className="max-w-2xl border-y border-border py-8"><h2 className="text-xl font-semibold">Choose accounts to include</h2><p className="mt-2 text-text-secondary">Only selected accounts will appear in your shared spending dashboard.</p><div className="mt-5 border-t border-border">{accounts.map((account) => { const checked = selectedIds.includes(account.plaidAccountId); return <label key={account.plaidAccountId} className="flex cursor-pointer items-center justify-between gap-4 border-b border-border py-4"><span><span className="block font-semibold">{account.name}{account.mask ? ` ··${account.mask}` : ""}</span><span className="text-sm text-text-secondary">{[account.type, account.subtype].filter(Boolean).join(" · ")}</span></span><input type="checkbox" checked={checked} onChange={() => setSelectedIds(checked ? selectedIds.filter((id) => id !== account.plaidAccountId) : [...selectedIds, account.plaidAccountId])} className="h-4 w-4 accent-black" /></label>; })}</div>{error && <p className="mt-4 text-sm text-red-700">{error}</p>}<div className="mt-5 flex flex-wrap gap-3"><button disabled={loading || selectedIds.length === 0} onClick={onSave} className="inline-flex h-11 items-center gap-2 bg-foreground px-4 text-sm font-semibold text-background disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save and import 90 days</button><button disabled={loading} onClick={onDisconnect} className="h-11 border border-border px-4 text-sm font-semibold text-text-secondary hover:border-foreground hover:text-foreground">Disconnect account</button></div></div>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) { return <div className="border border-border p-4"><p className="text-sm font-semibold text-text-secondary">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>; }

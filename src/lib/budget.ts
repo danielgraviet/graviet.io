@@ -54,6 +54,7 @@ type BudgetItemRow = {
   plaid_item_id: string;
   access_token_encrypted: string;
   sync_cursor: string | null;
+  plaid_env: string;
 };
 
 type PlaidAccount = {
@@ -122,9 +123,11 @@ export async function ensureBudgetSchema() {
         plaid_item_id text NOT NULL UNIQUE,
         access_token_encrypted text NOT NULL,
         sync_cursor text,
+        plaid_env text NOT NULL DEFAULT 'sandbox',
         created_at timestamptz NOT NULL DEFAULT now(),
         updated_at timestamptz NOT NULL DEFAULT now()
       )`;
+      await db`ALTER TABLE budget_items ADD COLUMN IF NOT EXISTS plaid_env text NOT NULL DEFAULT 'sandbox'`;
       await db`CREATE TABLE IF NOT EXISTS budget_accounts (
         id serial PRIMARY KEY,
         item_id integer NOT NULL REFERENCES budget_items(id) ON DELETE CASCADE,
@@ -223,9 +226,10 @@ export async function storePlaidItem(input: {
 }) {
   await ensureBudgetSchema();
   const db = sql();
-  const rows = (await db`INSERT INTO budget_items (plaid_item_id, access_token_encrypted)
-    VALUES (${input.itemId}, ${encryptBudgetToken(input.accessToken)})
-    ON CONFLICT (plaid_item_id) DO UPDATE SET access_token_encrypted = EXCLUDED.access_token_encrypted, updated_at = now()
+  const rows = (await db`INSERT INTO budget_items (plaid_item_id, access_token_encrypted, plaid_env)
+    VALUES (${input.itemId}, ${encryptBudgetToken(input.accessToken)}, ${process.env.PLAID_ENV || "sandbox"})
+    ON CONFLICT (plaid_item_id) DO UPDATE SET access_token_encrypted = EXCLUDED.access_token_encrypted,
+      plaid_env = EXCLUDED.plaid_env, updated_at = now()
     RETURNING id`) as { id: number }[];
   const itemId = rows[0]!.id;
   for (const account of input.accounts) {
@@ -294,7 +298,7 @@ export async function syncBudgetTransactions() {
         removed: { transaction_id: string }[];
         next_cursor: string;
         has_more: boolean;
-      }>("/transactions/sync", { access_token: accessToken, cursor });
+      }>("/transactions/sync", { access_token: accessToken, cursor }, item.plaid_env);
       added.push(...response.added);
       modified.push(...response.modified);
       removed.push(...response.removed);
@@ -343,6 +347,26 @@ export async function syncBudgetTransactions() {
     await db`UPDATE budget_items SET sync_cursor = ${cursor}, updated_at = now() WHERE id = ${item.id}`;
   }
   return { changed };
+}
+
+export async function disconnectBudgetAccounts() {
+  await ensureBudgetSchema();
+  const db = sql();
+  const items = (await db`SELECT id, plaid_item_id, access_token_encrypted, sync_cursor, plaid_env FROM budget_items`) as BudgetItemRow[];
+  let remoteRemovalFailed = false;
+  for (const item of items) {
+    try {
+      await plaidRequest("/item/remove", {
+        access_token: decryptBudgetToken(item.access_token_encrypted),
+      }, item.plaid_env);
+    } catch (error) {
+      // Clear the private local copy even if Plaid already revoked the item or is unavailable.
+      console.warn("Plaid item removal failed; clearing local budget item", error instanceof Error ? error.message : error);
+      remoteRemovalFailed = true;
+    }
+  }
+  await db`DELETE FROM budget_items`;
+  return { disconnected: items.length, remoteRemovalFailed };
 }
 
 export async function updateBudgetTransaction(input: {
@@ -425,18 +449,21 @@ export async function getBudgetDashboard(month?: string | null): Promise<BudgetD
   };
 }
 
-function plaidBaseUrl() {
-  const env = process.env.PLAID_ENV || "sandbox";
+function plaidBaseUrl(env = process.env.PLAID_ENV || "sandbox") {
   if (env === "production") return "https://production.plaid.com";
   if (env === "development") return "https://development.plaid.com";
   return "https://sandbox.plaid.com";
 }
 
-export async function plaidRequest<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+export async function plaidRequest<T>(
+  path: string,
+  payload: Record<string, unknown>,
+  environment?: string,
+): Promise<T> {
   const clientId = process.env.PLAID_CLIENT_ID;
   const secret = process.env.PLAID_SECRET;
   if (!clientId || !secret) throw new Error("Plaid is not configured. Add PLAID_CLIENT_ID and PLAID_SECRET.");
-  const response = await fetch(`${plaidBaseUrl()}${path}`, {
+  const response = await fetch(`${plaidBaseUrl(environment)}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ client_id: clientId, secret, ...payload }),
