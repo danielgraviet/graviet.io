@@ -13,9 +13,8 @@ const sections: {
     heading: "Currently Reading",
     books: [
       {
-        title: "Project Hail Mary",
-        author: "Andy Weir",
-        note: "A great sci-fi novel with a lot of science and humor.",
+        title: "Crossing the Chasm",
+        author: "Geoffrey A. Moore",
       },
     ],
   },
@@ -23,9 +22,8 @@ const sections: {
     heading: "Favorites",
     books: [
       {
-        title: "Zero to One",
-        author: "Peter Thiel",
-        note: "Changed how I think about building things.",
+        title: "Unreasonable Hospitality",
+        author: "Will Guidara",
       },
       {
         title: "Deep Work",
@@ -47,9 +45,10 @@ const sections: {
   {
     heading: "Want to Read",
     books: [
-      { title: "Thinking, Fast and Slow", author: "Daniel Kahneman" },
-      { title: "The Art of Doing Science and Engineering", author: "Richard Hamming" },
-      { title: "Gödel, Escher, Bach", author: "Douglas Hofstadter" },
+      { title: "Effortless", author: "Greg McKeown" },
+      { title: "Outliers", author: "Malcolm Gladwell" },
+      { title: "Fahrenheit 451", author: "Ray Bradbury" },
+      { title: "1984", author: "George Orwell" },
     ],
   },
 ];

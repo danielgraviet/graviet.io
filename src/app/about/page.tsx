@@ -79,6 +79,22 @@ const timeline: { year: string; event: string; Icon: LucideIcon }[] = [
     event:
       "Junior year at BYU. Became a research assistant in Dr. David Wingate's PCCL lab, currently working on a WhatsApp LLM integration and a project called EVO.",
   },
+  {
+    year: "Summer 2026",
+    Icon: Briefcase,
+    event: "Research intern in San Francisco.",
+  },
+  {
+    year: "SoCC 2026",
+    Icon: Brain,
+    event: "Submitting a paper on reinforcement-learning evaluations.",
+  },
+  {
+    year: "2026–Present",
+    Icon: FlaskConical,
+    event:
+      "Working on a second paper evaluating Kubernetes, Amazon EC2, AWS Fargate, and sandbox environments.",
+  },
 ];
 
 export default function AboutPage() {
@@ -122,7 +138,7 @@ export default function AboutPage() {
       <section className="mt-16">
         <h3 className="mb-6 text-2xl">Timeline</h3>
         <ol className="space-y-6 border-l-2 border-border pl-6">
-          {timeline.map((item) => (
+          {[...timeline].reverse().map((item) => (
             <li key={item.year} className="relative">
               <span className="absolute -left-[1.85rem] top-1 flex h-6 w-6 items-center justify-center rounded-full bg-background border-2 border-border">
                 <item.Icon className="h-3 w-3 text-foreground" />

@@ -53,25 +53,25 @@ const sections: {
   {
     heading: "Development",
     items: [
-      { name: "VS Code", description: "Editor of choice with Claude Code CLI" },
-      { name: "Alacritty", description: "Used to be Warp, but went for CPU friendly terminal." },
-      { name: "Claude Code", description: "AI coding assistant built into the terminal." },
+      { name: "Cursor", description: "VS Code-based editor of choice." },
+      { name: "Terminal", description: "The default macOS terminal." },
+      { name: "Codex / Claude Code", description: "I switch between them for AI-assisted coding." },
     ],
   },
   {
     heading: "Stack",
     items: [
+      { name: "Python", description: "My primary programming language." },
       { name: "Next.js", description: "Go-to framework for web apps and this site." },
-      { name: "TypeScript", description: "Strongly typed JavaScript everywhere." },
-      { name: "Tailwind CSS", description: "Utility-first styling." },
-      { name: "Vercel", description: "Deployment and hosting." },
+      { name: "Daytona", description: "Sandboxes and developer tooling." },
     ],
   },
   {
     heading: "Apps & Services",
     items: [
       { name: "Notion", description: "Notes, projects, and long-form thinking." },
-      { name: "Safari", description: "Browser of choice. CPU efficient and optimized for Mac hardware." },
+      { name: "Google Docs", description: "Simple documents and collaboration." },
+      { name: "Brave Browser", description: "Browser of choice for CPU efficiency." },
     ],
   },
 ];

@@ -28,7 +28,19 @@ export default function ProjectCard({ project }: { project: Project }) {
         {project.tags.map((tag) => (
           <span
             key={tag}
-            className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-text-secondary"
+            className={`rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${
+              tag === "Winner"
+                ? "bg-[#e2f5f4] text-[#286b6a] ring-[#9bd8d6]"
+                : tag === "Research"
+                  ? "bg-[#eaf5ec] text-[#386f45] ring-[#b8ddbf]"
+                  : tag === "Proof of Concept"
+                    ? "bg-[#edf1fb] text-[#465e9e] ring-[#c8d4ef]"
+                    : tag === "Student Tool"
+                      ? "bg-[#edf5fb] text-[#356b8c] ring-[#bedcf0]"
+                      : tag === "Learning Project"
+                        ? "bg-[#faf3e6] text-[#8a621f] ring-[#ecd8aa]"
+                        : "bg-muted text-text-secondary ring-transparent"
+            }`}
           >
             {tag}
           </span>
