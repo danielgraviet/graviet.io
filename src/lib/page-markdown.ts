@@ -222,6 +222,7 @@ async function toolsMarkdown(): Promise<string> {
     `- [TTFB Tool](${absolute("/tools/ttfb")}) — Measure time to first byte from an ephemeral Daytona sandbox.\n` +
     `- [Learn](${absolute("/tools/learn")}) — Curriculum and spaced-repetition quizzes (password-gated).\n` +
     `- [Work Log](${absolute("/tools/work-log")}) — Daily work notes with tags and search (password-gated).\n` +
+    `- [Household Budget](${absolute("/tools/budget")}) — Private shared spending dashboard (password-gated).\n` +
     `- [Interview Timer](${absolute("/interview-tool")}) — Timed interview practice.\n\n` +
     `## Development\n\n` +
     `- **Cursor** — VS Code-based editor of choice.\n` +
@@ -338,6 +339,7 @@ export async function buildPageMarkdown(
     normalized.startsWith("/api/") ||
     normalized.startsWith("/.well-known/markdown") ||
     normalized.startsWith("/tools/learn") ||
+    normalized === "/tools/budget" ||
     normalized === "/tools/roadmap" ||
     normalized === "/tools/work-log" ||
     normalized === "/learning-roadmap-route"

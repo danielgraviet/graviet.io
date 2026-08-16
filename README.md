@@ -56,6 +56,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the site, or [http:/
 | `bun start`   | Start production server  |
 | `bun lint`    | Run ESLint               |
 
+## Household Budget setup
+
+The private household budget at `/tools/budget` uses Neon and Plaid Transactions. Copy the Plaid variables from `.env.local.example`, generate `BUDGET_TOKEN_ENCRYPTION_KEY` with `openssl rand -base64 32`, and configure the same HTTPS `PLAID_REDIRECT_URI` in the Plaid Dashboard before connecting Wells Fargo. Wells Fargo requires a Plaid Production OAuth integration; Sandbox works for development with Plaid test institutions.
+
 ## Essay Idea Pipeline
 
 Use `content/ideas/` to track essay titles you have not started, partially started, or are actively drafting. The goal is to keep idea capture lightweight while making it easy for a coding agent to turn an idea file into a publishable post later.

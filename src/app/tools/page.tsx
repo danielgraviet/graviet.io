@@ -30,6 +30,11 @@ const sections: {
         href: "/tools/work-log",
       },
       {
+        name: "Household Budget",
+        description: "Private shared spending dashboard with Wells Fargo syncing.",
+        href: "/tools/budget",
+      },
+      {
         name: "Interview Timer",
         description: "Timed interview practice with prompts, phases, and notes.",
         href: "/interview-tool",

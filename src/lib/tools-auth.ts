@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const TOOLS_AUTH_COOKIE = "tools_auth";
+export const BUDGET_AUTH_COOKIE = "budget_auth";
 
 export function verifyToolsPassword(
   submittedPassword: unknown,
@@ -68,4 +69,22 @@ export function getCookieValue(cookieHeader: string | null, name: string) {
 
 export function verifyToolsAuthCookie(cookieHeader: string | null) {
   return verifyToolsAuthToken(getCookieValue(cookieHeader, TOOLS_AUTH_COOKIE));
+}
+
+export function createBudgetAuthToken(
+  configuredPassword = process.env.SEO_TOOLS_PASSWORD,
+) {
+  if (!configuredPassword) return "";
+  return createHmac("sha256", configuredPassword)
+    .update("graviet-budget-auth")
+    .digest("hex");
+}
+
+export function verifyBudgetAuthCookie(cookieHeader: string | null) {
+  const submittedToken = getCookieValue(cookieHeader, BUDGET_AUTH_COOKIE);
+  const configuredToken = createBudgetAuthToken();
+  if (!submittedToken || !configuredToken) return false;
+  const submitted = Buffer.from(submittedToken);
+  const configured = Buffer.from(configuredToken);
+  return submitted.length === configured.length && timingSafeEqual(submitted, configured);
 }
