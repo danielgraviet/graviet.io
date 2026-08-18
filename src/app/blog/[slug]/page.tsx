@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getAllSlugs } from "@/lib/posts";
 import { formatPostDate } from "@/lib/dates";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import PostTag from "@/components/PostTag";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -47,12 +48,7 @@ export default async function BlogPostPage({
         </h1>
         <div className="mt-4 flex flex-wrap gap-2">
           {post.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-text-secondary"
-            >
-              {tag}
-            </span>
+            <PostTag key={tag} tag={tag} />
           ))}
         </div>
       </header>

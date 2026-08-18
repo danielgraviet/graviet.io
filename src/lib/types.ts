@@ -6,6 +6,7 @@ export interface Post {
   publishedAt: string;
   tags: string[];
   featured: boolean;
+  externalUrl?: string;
   body?: string;
 }
 

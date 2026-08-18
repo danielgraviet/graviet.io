@@ -34,6 +34,7 @@ function parsePost(filename: string, includeBody = false): Post {
     publishedAt: normalizeDate(data.publishedAt),
     tags: Array.isArray(data.tags) ? data.tags : [],
     featured: data.featured === true,
+    externalUrl: data.externalUrl,
     body: includeBody ? content : undefined,
   };
 }
