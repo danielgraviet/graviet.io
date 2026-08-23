@@ -1,53 +1,58 @@
-import Link from "next/link";
-import NoScroll from "@/components/NoScroll";
-import {
-  Home as HomeIcon,
-  User,
-  Mail,
-  FolderOpen,
-  BookOpen,
-  FileText,
-  Library,
-  Wrench,
-  Heart,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
 
-const gridItems: { href: string; label: string; Icon: LucideIcon }[] = [
-  { href: "/", label: "Home", Icon: HomeIcon },
-  { href: "/about", label: "About", Icon: User },
-  { href: "/contact", label: "Contact", Icon: Mail },
-  { href: "/projects", label: "Projects", Icon: FolderOpen },
-  { href: "/blog", label: "Blog", Icon: BookOpen },
-  { href: "/resume.pdf", label: "Resume", Icon: FileText },
-  { href: "/library", label: "Library", Icon: Library },
-  { href: "/tools", label: "Tools", Icon: Wrench },
-  { href: "/lifestyle", label: "Lifestyle", Icon: Heart },
-];
+export const metadata: Metadata = {
+  title: "Daniel Graviet",
+  description:
+    "Daniel Graviet is a CS student at BYU studying the systems underneath machine learning.",
+};
 
 export default function Home() {
   return (
-    <section className="relative flex h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-6 pb-20">
-      <NoScroll />
-      <div className="relative z-10 grid w-full max-w-xs grid-cols-3 gap-3">
-        {gridItems.map(({ href, label, Icon }) => (
-          <Link
-            key={label}
-            href={href}
-            className="relative flex flex-col items-center gap-2 rounded-2xl border border-border bg-background/60 py-6 text-text-secondary backdrop-blur-sm transition-colors hover:border-foreground/30 hover:text-foreground"
-          >
-            {label === "Blog" && (
-              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">
-                1
-              </span>
-            )}
-            <Icon className="h-6 w-6" />
-            <span className="text-xs font-semibold">
-              {label}
-            </span>
-          </Link>
-        ))}
-      </div>
-    </section>
+    <article className="mx-auto max-w-xl space-y-8 pb-8 text-[17px] leading-[1.7] text-foreground md:text-[18px]">
+      <p>
+        Hey, I&apos;m Daniel. I&apos;m a Research Engineer at Daytona. Currently
+        finishing up CS degree at BYU. I am interested in the
+        systems side of machine learning. Infrastructure of reliable and scalable
+        reinforcement learning rollouts, model serving, and more.
+      </p>
+
+      <Photo src="/boat.JPEG" alt="Out on the water" priority />
+
+      <p>
+      I got here by trying a lot of things first. Early on, I built with Arduinos, then moved to my first paying job working with PHP, then to C++, and now mainly Python. (I do miss C++, though.) My favorite class so far has been Machine Learning, where we covered more classical models specifically KNN, SVM's, and MLP's.
+      </p>
+      <Photo src="/friends.JPEG" alt="With friends" />
+      <p>
+        Right now I&apos;m focused on CPU optimization by gaining a good foundation in computer architecture, operating systems, and virtualization. (sandboxing)
+      </p>
+      <p>
+        Outside of that I&apos;m usually with with family & friends, reading, and working on side projects.
+      </p>
+    </article>
+  );
+}
+
+function Photo({
+  src,
+  alt,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  return (
+    <figure className="-mx-1">
+      <Image
+        src={src}
+        alt={alt}
+        width={1600}
+        height={1200}
+        priority={priority}
+        className="h-auto w-full"
+        sizes="(min-width: 768px) 36rem, 100vw"
+      />
+    </figure>
   );
 }

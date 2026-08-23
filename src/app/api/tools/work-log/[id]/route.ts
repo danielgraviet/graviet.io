@@ -6,7 +6,7 @@ import {
   normalizeTags,
   updateWorkLogEntry,
 } from "@/lib/work-log";
-import { verifyToolsPassword } from "@/lib/tools-auth";
+import { isToolsAuthenticated } from "@/lib/tools-auth";
 
 export const runtime = "nodejs";
 
@@ -50,7 +50,7 @@ export async function PATCH(
     today?: unknown;
   };
 
-  if (!verifyToolsPassword(password)) {
+  if (!isToolsAuthenticated(request, password)) {
     return Response.json({ error: "Invalid tools password." }, { status: 401 });
   }
 
@@ -112,7 +112,7 @@ export async function DELETE(
   const password = url.searchParams.get("password");
   const todayParam = url.searchParams.get("today");
 
-  if (!verifyToolsPassword(password)) {
+  if (!isToolsAuthenticated(request, password)) {
     return Response.json({ error: "Invalid tools password." }, { status: 401 });
   }
 

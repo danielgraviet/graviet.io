@@ -3,8 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Flame, Plus } from "lucide-react";
-import LearnUnlock from "./LearnUnlock";
-import { getLearnPassword, learnQuery } from "@/lib/learn/client";
+import { learnQuery } from "@/lib/learn/client";
 
 type Subject = {
   id: number;
@@ -25,25 +24,23 @@ type Stats = {
 };
 
 export default function LearnHub() {
-  const [password, setPassword] = useState("");
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
-  async function load(pwd: string) {
+  async function load() {
     setError(null);
     try {
       const [subjectsRes, statsRes] = await Promise.all([
-        fetch(`/api/tools/learn/subjects?${learnQuery(pwd)}`),
-        fetch(`/api/tools/learn/review/stats?${learnQuery(pwd)}`),
+        fetch(`/api/tools/learn/subjects?${learnQuery()}`),
+        fetch(`/api/tools/learn/review/stats?${learnQuery()}`),
       ]);
       const subjectsPayload = await subjectsRes.json();
       const statsPayload = await statsRes.json();
 
       if (!subjectsRes.ok) {
         setError(subjectsPayload.error || "Failed to load.");
-        setPassword("");
         return;
       }
 
@@ -55,11 +52,7 @@ export default function LearnHub() {
   }
 
   useEffect(() => {
-    const stored = getLearnPassword();
-    if (stored) {
-      setPassword(stored);
-      load(stored);
-    }
+    load();
   }, []);
 
   async function handleAddSubject(event: FormEvent<HTMLFormElement>) {
@@ -69,7 +62,7 @@ export default function LearnHub() {
     const response = await fetch("/api/tools/learn/subjects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, title: newTitle.trim() }),
+      body: JSON.stringify({ title: newTitle.trim() }),
     });
     const payload = await response.json();
     if (!response.ok) {
@@ -80,8 +73,8 @@ export default function LearnHub() {
     setSubjects((prev) => (prev ? [...prev, payload.subject] : [payload.subject]));
   }
 
-  if (!password) {
-    return <LearnUnlock onUnlock={(pwd) => { setPassword(pwd); load(pwd); }} />;
+  if (!subjects) {
+    return <p className="text-sm text-text-secondary">{error || "Loading…"}</p>;
   }
 
   return (
@@ -106,12 +99,20 @@ export default function LearnHub() {
         </div>
       )}
 
-      <Link
-        href="/tools/learn/review"
-        className="inline-flex h-11 items-center justify-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-80"
-      >
-        Start review
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          href="/tools/learn/review"
+          className="inline-flex h-11 items-center justify-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-80"
+        >
+          Start review
+        </Link>
+        <Link
+          href="/tools/learn/stats"
+          className="inline-flex h-11 items-center justify-center border border-border px-4 text-sm font-semibold transition-colors hover:border-foreground"
+        >
+          Stats
+        </Link>
+      </div>
 
       {error && <p className="text-sm text-text-secondary">{error}</p>}
 

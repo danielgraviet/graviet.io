@@ -1,5 +1,5 @@
 import { listKnownTags, suggestTags } from "@/lib/work-log-tags";
-import { verifyToolsPassword } from "@/lib/tools-auth";
+import { isToolsAuthenticated } from "@/lib/tools-auth";
 
 export const runtime = "nodejs";
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     text?: unknown;
   };
 
-  if (!verifyToolsPassword(password)) {
+  if (!isToolsAuthenticated(request, password)) {
     return Response.json({ error: "Invalid tools password." }, { status: 401 });
   }
 

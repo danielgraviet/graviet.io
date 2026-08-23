@@ -1,35 +1,24 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
 import type { Post } from "@/lib/types";
 import { formatPostDate } from "@/lib/dates";
-import PostTag from "@/components/PostTag";
 
 export default function BlogCard({ post }: { post: Post }) {
-  const className = `group relative block rounded-lg border p-6 transition-shadow hover:shadow-md ${
-    post.featured
-      ? "border-red-200 bg-red-50"
-      : "border-border bg-white"
-  }`;
+  const className =
+    "group relative flex flex-col gap-2 border border-border bg-background px-5 py-4 transition-colors hover:border-foreground sm:flex-row sm:items-baseline sm:justify-between sm:gap-8";
 
   const cardContent = (
     <>
-      {post.featured && (
-        <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white">
-          <Star className="h-4 w-4 fill-current" />
-        </span>
-      )}
-      <time className="text-sm text-text-secondary">
+      <div className="min-w-0 flex-1">
+        <h3 className="text-lg leading-snug group-hover:opacity-70">{post.title}</h3>
+        {post.excerpt && (
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            {post.excerpt}
+          </p>
+        )}
+      </div>
+      <time className="shrink-0 text-sm text-text-secondary">
         {formatPostDate(post.publishedAt)}
       </time>
-      <h3 className="mt-2 text-xl group-hover:text-accent">
-        {post.title}
-      </h3>
-      <p className="mt-2 text-text-secondary leading-relaxed">{post.excerpt}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {post.tags.map((tag) => (
-          <PostTag key={tag} tag={tag} />
-        ))}
-      </div>
     </>
   );
 

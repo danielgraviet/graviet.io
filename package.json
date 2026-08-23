@@ -12,8 +12,6 @@
   "dependencies": {
     "@daytona/sdk": "^0.196.0",
     "@neondatabase/serverless": "^1.1.0",
-    "@splinetool/react-spline": "^4.1.0",
-    "@types/katex": "^0.16.8",
     "@vercel/analytics": "^2.0.1",
     "gray-matter": "^4.0.3",
     "katex": "^0.16.47",
@@ -25,11 +23,11 @@
     "rehype-katex": "^7.0.1",
     "rehype-pretty-code": "^0.14.3",
     "rehype-stringify": "^10.0.1",
-    "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
-    "remark-html": "^16.0.1",
     "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
+    "uisfx": "^0.4.0",
     "unified": "^11.0.5"
   },
   "devDependencies": {

@@ -247,16 +247,9 @@ export default function BudgetTool() {
 
   if (status === "locked") {
     return (
-      <form onSubmit={unlock} className="max-w-md border-y border-border py-6">
-        <label className="block">
-          <span className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-text-secondary"><Lock className="h-3.5 w-3.5" />Shared tools password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required className="w-full border border-border bg-background px-3 py-2.5 outline-none focus:border-foreground" />
-        </label>
-        {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
-        <button disabled={loading} className="mt-4 inline-flex h-11 items-center gap-2 bg-foreground px-4 text-sm font-semibold text-background disabled:opacity-60">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Unlock budget
-        </button>
-      </form>
+      <p className="border-y border-border py-5 text-sm text-text-secondary">
+        {error || "Unable to load the budget."}
+      </p>
     );
   }
 
@@ -340,5 +333,5 @@ function CategoryChart({ totals }: { totals: BudgetDashboard["categoryTotals"] }
 
 function TrendChart({ totals }: { totals: BudgetDashboard["monthlyTotals"] }) {
   const max = Math.max(...totals.map((item) => item.total), 1);
-  return <section className="border border-border p-5"><h2 className="text-lg font-semibold">Six-month spending</h2>{totals.length === 0 ? <p className="mt-6 text-sm text-text-secondary">Monthly history will appear after your first sync.</p> : <div className="mt-6 flex h-44 items-end gap-3">{totals.map((item) => <div key={item.month} className="flex min-w-0 flex-1 flex-col justify-end gap-2 text-center"><div className="relative min-h-1 bg-[#dbe9e8]" style={{ height: `${Math.max((item.total / max) * 100, 3)}%` }}><span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold">{money(item.total)}</span></div><span className="text-xs text-text-secondary">{new Date(`${item.month}-01T12:00:00`).toLocaleString("en-US", { month: "short" })}</span></div>)}</div>}</section>;
+  return <section className="border border-border p-5"><h2 className="text-lg font-semibold">Six-month spending</h2>{totals.length === 0 ? <p className="mt-6 text-sm text-text-secondary">Monthly history will appear after your first sync.</p> : <div className="mt-6 flex h-44 items-stretch gap-3">{totals.map((item) => <div key={item.month} className="flex min-w-0 flex-1 flex-col gap-2 text-center"><div className="flex min-h-0 flex-1 items-end justify-center"><div className="relative min-h-1 w-full bg-[#dbe9e8]" style={{ height: `${Math.max((item.total / max) * 100, 3)}%` }}><span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold">{money(item.total)}</span></div></div><span className="text-xs text-text-secondary">{new Date(`${item.month}-01T12:00:00`).toLocaleString("en-US", { month: "short" })}</span></div>)}</div>}</section>;
 }

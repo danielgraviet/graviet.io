@@ -8,14 +8,13 @@ tags: [Personal, Writing]
 
 ## Welcome
 
-This is my first post. I'll be writing about software engineering, side projects, and whatever else I find interesting.
+This is my first post. I'll be writing about systems engineering, side projects, and whatever else I find interesting.
 
 ## What to Expect
 
 Posts on things like:
 
-- Building AI-powered tools
-- Go, Python, and TypeScript patterns
-- Lessons from shipping personal projects
+- ML topics
+- CPU & lower level systems
+- occasional random just for fun post.
 
-Stay tuned.

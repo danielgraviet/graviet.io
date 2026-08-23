@@ -81,24 +81,44 @@ function shiftDate(dateStr: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+function isWorkday(dateStr: string): boolean {
+  const day = new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
+  return day !== 0 && day !== 6;
+}
+
+function shiftToWorkday(dateStr: string, direction: -1 | 1): string {
+  let cursor = shiftDate(dateStr, direction);
+  while (!isWorkday(cursor)) {
+    cursor = shiftDate(cursor, direction);
+  }
+  return cursor;
+}
+
 export function computeStreak(
   loggedDates: string[],
   today: string,
 ): WorkLogStreak {
-  const unique = [...new Set(loggedDates.map((d) => d.slice(0, 10)))].sort(
+  const unique = [...new Set(loggedDates.map((d) => d.slice(0, 10)))].filter(isWorkday).sort(
     (a, b) => (a < b ? 1 : a > b ? -1 : 0),
   );
 
   const lastLoggedOn = unique[0] ?? null;
   const loggedToday = unique.includes(today);
-  const yesterday = shiftDate(today, -1);
+  const mostRecentWorkday = isWorkday(today) ? today : shiftToWorkday(today, -1);
+  const previousWorkday = shiftToWorkday(mostRecentWorkday, -1);
 
   let current = 0;
-  if (loggedToday || unique.includes(yesterday)) {
-    let cursor = loggedToday ? today : yesterday;
+  if (unique.includes(mostRecentWorkday)) {
+    let cursor = mostRecentWorkday;
     while (unique.includes(cursor)) {
       current += 1;
-      cursor = shiftDate(cursor, -1);
+      cursor = shiftToWorkday(cursor, -1);
+    }
+  } else if (unique.includes(previousWorkday)) {
+    let cursor = previousWorkday;
+    while (unique.includes(cursor)) {
+      current += 1;
+      cursor = shiftToWorkday(cursor, -1);
     }
   }
 
@@ -107,7 +127,7 @@ export function computeStreak(
   let prev: string | null = null;
 
   for (const date of [...unique].sort()) {
-    if (prev && date === shiftDate(prev, 1)) {
+    if (prev && date === shiftToWorkday(prev, 1)) {
       run += 1;
     } else {
       run = 1;

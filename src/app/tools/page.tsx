@@ -6,111 +6,60 @@ export const metadata: Metadata = {
   title: "Tools",
 };
 
-const sections: {
-  heading: string;
-  items: { name: string; description: string; href?: string }[];
-}[] = [
+const items: { name: string; description: string; href: string }[] = [
   {
-    heading: "Site Tools",
-    items: [
-      {
-        name: "TTFB Tool",
-        description: "Measure time to first byte from an ephemeral Daytona sandbox.",
-        href: "/tools/ttfb",
-      },
-      {
-        name: "Learn",
-        description:
-          "AI Runtime Systems curriculum, custom subjects, and spaced-repetition quizzes.",
-        href: "/tools/learn",
-      },
-      {
-        name: "Work Log",
-        description: "Daily work notes with tags, search, and a logging streak.",
-        href: "/tools/work-log",
-      },
-      {
-        name: "Household Budget",
-        description: "Private shared spending dashboard with Wells Fargo syncing.",
-        href: "/tools/budget",
-      },
-      {
-        name: "Interview Timer",
-        description: "Timed interview practice with prompts, phases, and notes.",
-        href: "/interview-tool",
-      },
-      {
-        name: "Go-Explore Demo",
-        description: "How sandbox snapshots let agents branch from saved progress.",
-        href: "/daytona-search-demo",
-      },
-    ],
+    name: "TTFB Tool",
+    description:
+      "Measure saved sites from a Daytona sandbox and track TTFB over time.",
+    href: "/tools/ttfb",
   },
   {
-    heading: "Hardware",
-    items: [
-      { name: "MacBook Pro M3", description: "Primary machine for everything." },
-      { name: "HomePC", description: "My homebuilt PC. RTX 3090, 64GB RAM. Linux Mint." },
-      { name: "iPhone 15 Pro", description: "Daily driver." },
-      { name: "AirPods Pro", description: "Noise cancellation for deep work sessions." },
-    ],
+    name: "Learn",
+    description:
+      "AI Runtime Systems curriculum, custom subjects, and spaced-repetition quizzes.",
+    href: "/tools/learn",
   },
   {
-    heading: "Development",
-    items: [
-      { name: "Cursor", description: "VS Code-based editor of choice." },
-      { name: "Terminal", description: "The default macOS terminal." },
-      { name: "Codex / Claude Code", description: "I switch between them for AI-assisted coding." },
-    ],
+    name: "Work Log",
+    description: "Daily work notes with tags, search, and a logging streak.",
+    href: "/tools/work-log",
   },
   {
-    heading: "Stack",
-    items: [
-      { name: "Python", description: "My primary programming language." },
-      { name: "Next.js", description: "Go-to framework for web apps and this site." },
-      { name: "Daytona", description: "Sandboxes and developer tooling." },
-    ],
+    name: "Household Budget",
+    description: "Private shared spending dashboard with Wells Fargo syncing.",
+    href: "/tools/budget",
   },
   {
-    heading: "Apps & Services",
-    items: [
-      { name: "Notion", description: "Notes, projects, and long-form thinking." },
-      { name: "Google Docs", description: "Simple documents and collaboration." },
-      { name: "Brave Browser", description: "Browser of choice for CPU efficiency." },
-    ],
+    name: "Interview Timer",
+    description: "Timed interview practice with prompts, phases, and notes.",
+    href: "/interview-tool",
+  },
+  {
+    name: "Go-Explore Demo",
+    description: "How sandbox snapshots let agents branch from saved progress.",
+    href: "/daytona-search-demo",
   },
 ];
 
 export default function ToolsPage() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 md:px-6 md:py-12">
-      <SectionHeading title="Tools" subtitle="What I use to get things done" />
-      <div className="space-y-12">
-        {sections.map((section) => (
-          <div key={section.heading}>
-            <p className="mb-4 text-sm font-semibold text-text-secondary">
-              {section.heading}
-            </p>
-            <div className="border-t border-border">
-              {section.items.map((item) => (
-                <div
-                  key={item.name}
-                  className="flex flex-col gap-0.5 border-b border-border py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-                >
-                  {item.href ? (
-                    <Link
-                      href={item.href}
-                      className="shrink-0 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary"
-                    >
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <span className="shrink-0 text-base font-semibold">{item.name}</span>
-                  )}
-                  <span className="text-sm leading-relaxed text-text-secondary">{item.description}</span>
-                </div>
-              ))}
-            </div>
+    <div className="mx-auto max-w-2xl py-2">
+      <SectionHeading title="Tools" subtitle="Things I built to use" />
+      <div className="border-t border-border">
+        {items.map((item) => (
+          <div
+            key={item.name}
+            className="flex flex-col gap-0.5 border-b border-border py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+          >
+            <Link
+              href={item.href}
+              className="shrink-0 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary"
+            >
+              {item.name}
+            </Link>
+            <span className="text-sm leading-relaxed text-text-secondary">
+              {item.description}
+            </span>
           </div>
         ))}
       </div>

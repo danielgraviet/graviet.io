@@ -3,8 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import LearnUnlock from "../LearnUnlock";
-import { getLearnPassword, learnQuery } from "@/lib/learn/client";
+import { learnQuery } from "@/lib/learn/client";
 
 type Topic = {
   id: number;
@@ -31,21 +30,19 @@ type Detail = {
 };
 
 export default function LearnSubject({ slug }: { slug: string }) {
-  const [password, setPassword] = useState("");
   const [detail, setDetail] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
-  async function load(pwd: string) {
+  async function load() {
     setError(null);
     try {
       const response = await fetch(
-        `/api/tools/learn/subjects/${encodeURIComponent(slug)}?${learnQuery(pwd)}`,
+        `/api/tools/learn/subjects/${encodeURIComponent(slug)}?${learnQuery()}`,
       );
       const payload = await response.json();
       if (!response.ok) {
         setError(payload.error || "Failed to load subject.");
-        setPassword("");
         return;
       }
       setDetail(payload as Detail);
@@ -55,11 +52,7 @@ export default function LearnSubject({ slug }: { slug: string }) {
   }
 
   useEffect(() => {
-    const stored = getLearnPassword();
-    if (stored) {
-      setPassword(stored);
-      load(stored);
-    }
+    load();
   }, [slug]);
 
   async function handleAdd(event: FormEvent<HTMLFormElement>) {
@@ -69,7 +62,6 @@ export default function LearnSubject({ slug }: { slug: string }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        password,
         subjectId: detail.subject.id,
         title: newTitle.trim(),
       }),
@@ -87,10 +79,6 @@ export default function LearnSubject({ slug }: { slug: string }) {
     );
   }
 
-  if (!password) {
-    return <LearnUnlock onUnlock={(pwd) => { setPassword(pwd); load(pwd); }} />;
-  }
-
   if (!detail) {
     return <p className="text-sm text-text-secondary">{error || "Loading…"}</p>;
   }
@@ -104,7 +92,7 @@ export default function LearnSubject({ slug }: { slug: string }) {
         >
           Learn
         </Link>
-        <h1 className="mt-2 font-display text-3xl font-semibold uppercase">
+        <h1 className="mt-2 text-3xl tracking-tight">
           {detail.subject.title}
         </h1>
         {detail.subject.description && (

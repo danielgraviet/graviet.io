@@ -7,7 +7,13 @@ import {
   RUNTIME_SUBJECT_SLUG,
   progressKey,
 } from "@/lib/learn/curriculum";
-import { applySm2, newCardSchedule, type LearnRating, type Sm2State } from "@/lib/learn/sm2";
+import {
+  buildLearnInsights,
+  type InsightCard,
+  type InsightReview,
+  type LearnInsights,
+} from "@/lib/learn/insights";
+import { applySm2, isLearnRating, newCardSchedule, type LearnRating, type Sm2State } from "@/lib/learn/sm2";
 import { getLearningRoadmapProgress } from "@/lib/learning-roadmap-progress";
 import { listConcepts } from "@/lib/roadmap";
 
@@ -170,6 +176,8 @@ export async function ensureLearnSchema(): Promise<void> {
 
       await db`CREATE INDEX IF NOT EXISTS learn_cards_due_idx ON learn_cards (due_at)`;
       await db`CREATE INDEX IF NOT EXISTS learn_topics_subject_idx ON learn_topics (subject_id, domain_id)`;
+      await db`CREATE INDEX IF NOT EXISTS learn_reviews_reviewed_idx ON learn_reviews (reviewed_at DESC)`;
+      await db`CREATE INDEX IF NOT EXISTS learn_reviews_card_idx ON learn_reviews (card_id)`;
 
       await db`
         CREATE TABLE IF NOT EXISTS learn_meta (
@@ -832,4 +840,87 @@ export async function getLearnStats(today: string): Promise<LearnStats> {
       today,
     ),
   };
+}
+
+type InsightCardRow = {
+  id: number;
+  front: string;
+  ease: number;
+  interval_days: number;
+  repetitions: number;
+  lapses: number;
+  due_at: string | Date;
+  last_reviewed_at: string | Date | null;
+  topic_id: number | null;
+  topic_title: string | null;
+  subject_slug: string;
+  domain_title: string | null;
+};
+
+type InsightReviewRow = {
+  card_id: number;
+  rating: string;
+  reviewed_at: string | Date;
+};
+
+function toIso(value: string | Date): string {
+  return typeof value === "string" ? value : value.toISOString();
+}
+
+export async function getLearnInsights(today: string, now = new Date()): Promise<LearnInsights> {
+  await ensureLearnSchema();
+  const db = sql();
+
+  const cardRows = (await db`
+    SELECT
+      c.id,
+      c.front,
+      c.ease,
+      c.interval_days,
+      c.repetitions,
+      c.lapses,
+      c.due_at,
+      c.last_reviewed_at,
+      c.topic_id,
+      t.title AS topic_title,
+      s.slug AS subject_slug,
+      d.title AS domain_title
+    FROM learn_cards c
+    JOIN learn_subjects s ON s.id = c.subject_id
+    LEFT JOIN learn_topics t ON t.id = c.topic_id
+    LEFT JOIN learn_domains d ON d.id = t.domain_id
+  `) as unknown as InsightCardRow[];
+
+  const reviewRows = (await db`
+    SELECT card_id, rating, reviewed_at
+    FROM learn_reviews
+    ORDER BY reviewed_at ASC, id ASC
+  `) as unknown as InsightReviewRow[];
+
+  const cards: InsightCard[] = cardRows.map((row) => ({
+    id: row.id,
+    front: row.front,
+    ease: Number(row.ease),
+    intervalDays: Number(row.interval_days),
+    repetitions: row.repetitions,
+    lapses: row.lapses,
+    dueAt: toIso(row.due_at),
+    lastReviewedAt: row.last_reviewed_at ? toIso(row.last_reviewed_at) : null,
+    topicId: row.topic_id,
+    topicTitle: row.topic_title,
+    subjectSlug: row.subject_slug,
+    domainTitle: row.domain_title,
+  }));
+
+  const reviews: InsightReview[] = [];
+  for (const row of reviewRows) {
+    if (!isLearnRating(row.rating)) continue;
+    reviews.push({
+      cardId: row.card_id,
+      rating: row.rating,
+      reviewedAt: toIso(row.reviewed_at),
+    });
+  }
+
+  return buildLearnInsights({ cards, reviews, today, now });
 }

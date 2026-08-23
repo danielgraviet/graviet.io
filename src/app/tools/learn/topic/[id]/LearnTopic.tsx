@@ -3,8 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
-import LearnUnlock from "../../LearnUnlock";
-import { getLearnPassword, learnQuery } from "@/lib/learn/client";
+import { learnQuery } from "@/lib/learn/client";
 
 type Topic = {
   id: number;
@@ -28,7 +27,6 @@ const STATUSES = ["todo", "learning", "known"] as const;
 const MASTERY = ["learning", "practiced", "proficient", "mastered"] as const;
 
 export default function LearnTopic({ id }: { id: number }) {
-  const [password, setPassword] = useState("");
   const [topic, setTopic] = useState<Topic | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +34,15 @@ export default function LearnTopic({ id }: { id: number }) {
   const [back, setBack] = useState("");
   const [saving, setSaving] = useState(false);
 
-  async function load(pwd: string) {
+  async function load() {
     setError(null);
     try {
       const response = await fetch(
-        `/api/tools/learn/topics/${id}/cards?${learnQuery(pwd)}`,
+        `/api/tools/learn/topics/${id}/cards?${learnQuery()}`,
       );
       const payload = await response.json();
       if (!response.ok) {
         setError(payload.error || "Failed to load topic.");
-        setPassword("");
         return;
       }
       setTopic(payload.topic as Topic);
@@ -56,11 +53,7 @@ export default function LearnTopic({ id }: { id: number }) {
   }
 
   useEffect(() => {
-    const stored = getLearnPassword();
-    if (stored) {
-      setPassword(stored);
-      load(stored);
-    }
+    load();
   }, [id]);
 
   async function patchTopic(partial: Partial<Topic>) {
@@ -70,7 +63,7 @@ export default function LearnTopic({ id }: { id: number }) {
     await fetch(`/api/tools/learn/topics/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, ...partial }),
+      body: JSON.stringify(partial),
     });
   }
 
@@ -83,7 +76,6 @@ export default function LearnTopic({ id }: { id: number }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          password,
           front: front.trim(),
           back: back.trim(),
         }),
@@ -109,7 +101,7 @@ export default function LearnTopic({ id }: { id: number }) {
       const parsed = await fetch("/api/tools/learn/cards/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, notes: topic.notes }),
+        body: JSON.stringify({ notes: topic.notes }),
       });
       const payload = await parsed.json();
       if (!parsed.ok) {
@@ -126,7 +118,6 @@ export default function LearnTopic({ id }: { id: number }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            password,
             front: pair.front,
             back: pair.back,
             source: "parsed",
@@ -144,15 +135,8 @@ export default function LearnTopic({ id }: { id: number }) {
 
   async function handleDeleteCard(cardId: number) {
     if (!confirm("Delete this card?")) return;
-    await fetch(
-      `/api/tools/learn/cards/${cardId}?password=${encodeURIComponent(password)}`,
-      { method: "DELETE" },
-    );
+    await fetch(`/api/tools/learn/cards/${cardId}`, { method: "DELETE" });
     setCards((prev) => prev.filter((card) => card.id !== cardId));
-  }
-
-  if (!password) {
-    return <LearnUnlock onUnlock={(pwd) => { setPassword(pwd); load(pwd); }} />;
   }
 
   if (!topic) {

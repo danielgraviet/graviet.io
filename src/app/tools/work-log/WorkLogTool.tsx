@@ -1,13 +1,12 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   Copy,
   Flame,
-  Lock,
   Pencil,
   Plus,
   Search,
@@ -62,7 +61,7 @@ function normalizeTagInput(value: string): string {
 }
 
 export default function WorkLogTool() {
-  const [password, setPassword] = useState("");
+  const [password] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [entries, setEntries] = useState<WorkLogEntry[] | null>(null);
@@ -141,11 +140,11 @@ export default function WorkLogTool() {
     }
   }
 
-  function handleUnlock(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPage(1);
-    loadEntries(password, { page: 1 });
-  }
+  useEffect(() => {
+    loadEntries("");
+    // Initial unlock uses the tools session cookie.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -350,33 +349,9 @@ export default function WorkLogTool() {
 
   if (!unlocked) {
     return (
-      <form onSubmit={handleUnlock} className="border-y border-border py-5">
-        <label className="block">
-          <span className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
-            <Lock className="h-3.5 w-3.5" />
-            Password
-          </span>
-          <div className="flex gap-3">
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full max-w-xs border border-border bg-background px-3 py-2.5 text-base outline-none transition-colors focus:border-foreground"
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex h-11 items-center justify-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Unlock
-            </button>
-          </div>
-        </label>
-        {authError && (
-          <p className="mt-3 text-sm text-text-secondary">{authError}</p>
-        )}
-      </form>
+      <p className="border-y border-border py-5 text-sm text-text-secondary">
+        {authError || "Loading…"}
+      </p>
     );
   }
 
@@ -388,7 +363,7 @@ export default function WorkLogTool() {
             <Flame
               className={`h-4 w-4 ${streak.current > 0 ? "text-foreground" : "text-text-secondary"}`}
             />
-            {streak.current} day streak
+            {streak.current} workday streak
           </span>
           <span className="text-text-secondary">
             Longest: {streak.longest}

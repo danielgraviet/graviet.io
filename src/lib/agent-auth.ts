@@ -146,7 +146,7 @@ Expected response:
 
 ## Protected tools (non-OAuth)
 
-Password-gated site tools (\`/tools/learn\`, \`/tools/work-log\`, related \`/api/tools/*\` routes) use the shared tools password (\`SEO_TOOLS_PASSWORD\`), not Auth.md agent credentials.
+Password-gated site tools (\`/tools\` and related \`/api/tools/*\` routes) use the shared tools password (\`SEO_TOOLS_PASSWORD\`), not Auth.md agent credentials.
 
 ## Public alternatives
 

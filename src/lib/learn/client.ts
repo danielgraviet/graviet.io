@@ -17,7 +17,7 @@ export function localToday(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function learnQuery(password: string, extra?: Record<string, string>) {
-  const params = new URLSearchParams({ password, today: localToday(), ...extra });
+export function learnQuery(extra?: Record<string, string>) {
+  const params = new URLSearchParams({ today: localToday(), ...extra });
   return params.toString();
 }

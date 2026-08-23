@@ -4,7 +4,7 @@ slug: old-ideas-new-machines
 excerpt: The same patterns keep reappearing in new disguises — branch prediction becomes speculative decoding, virtual memory becomes PagedAttention.
 publishedAt: 2026-08-06
 tags: [AI, Systems, CPU Architecture]
-featured: true
+featured: false
 ---
 
 One of the things I find most interesting about computer science is seeing the same patterns re-applied in completely different places.

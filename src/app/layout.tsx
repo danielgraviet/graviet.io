@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "katex/dist/katex.min.css";
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-source-serif",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,11 +20,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "graviet.io",
-    template: "%s | graviet.io",
+    default: "Daniel Graviet",
+    template: "%s | Daniel Graviet",
   },
   description:
-    "Personal website and blog — thoughts on web development, projects, and more.",
+    "Daniel Graviet is a CS student at BYU studying the systems underneath machine learning.",
   icons: {
     icon: "/favicon.svg",
   },
@@ -30,20 +36,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://api.fontshare.com" />
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=array@400,700&display=swap"
-        />
-      </head>
-      <body className="antialiased">
-        <Navbar />
-        <main className="min-h-[calc(100vh-8rem)] pb-24">
-          {children}
-        </main>
-        <Footer />
+    <html lang="en" className={`${sourceSerif.variable} ${inter.variable}`}>
+      <body className="font-serif antialiased">
+        <div className="mx-auto flex min-h-screen max-w-5xl flex-col md:flex-row">
+          <Navbar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="flex-1 px-4 pb-16 pt-4 md:px-8 md:pt-10 lg:px-12">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </div>
         <Analytics />
       </body>
     </html>

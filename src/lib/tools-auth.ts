@@ -71,6 +71,23 @@ export function verifyToolsAuthCookie(cookieHeader: string | null) {
   return verifyToolsAuthToken(getCookieValue(cookieHeader, TOOLS_AUTH_COOKIE));
 }
 
+export function isToolsAuthenticated(request: Request, password?: unknown) {
+  return (
+    verifyToolsAuthCookie(request.headers.get("cookie")) ||
+    verifyToolsPassword(password)
+  );
+}
+
+export function toolsAuthCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  };
+}
+
 export function createBudgetAuthToken(
   configuredPassword = process.env.SEO_TOOLS_PASSWORD,
 ) {

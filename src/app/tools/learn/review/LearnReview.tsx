@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import LearnUnlock from "../LearnUnlock";
-import { getLearnPassword, learnQuery, localToday } from "@/lib/learn/client";
+import { learnQuery, localToday } from "@/lib/learn/client";
 import type { LearnRating } from "@/lib/learn/sm2";
 
 type Card = {
@@ -20,7 +19,6 @@ const RATINGS: { id: LearnRating; label: string; hint: string }[] = [
 ];
 
 export default function LearnReview() {
-  const [password, setPassword] = useState("");
   const [cards, setCards] = useState<Card[] | null>(null);
   const [due, setDue] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -29,14 +27,13 @@ export default function LearnReview() {
 
   const current = cards?.[0] ?? null;
 
-  async function load(pwd: string) {
+  async function load() {
     setError(null);
     try {
-      const response = await fetch(`/api/tools/learn/review/queue?${learnQuery(pwd)}`);
+      const response = await fetch(`/api/tools/learn/review/queue?${learnQuery()}`);
       const payload = await response.json();
       if (!response.ok) {
         setError(payload.error || "Failed to load queue.");
-        setPassword("");
         return;
       }
       setCards(payload.cards as Card[]);
@@ -48,11 +45,7 @@ export default function LearnReview() {
   }
 
   useEffect(() => {
-    const stored = getLearnPassword();
-    if (stored) {
-      setPassword(stored);
-      load(stored);
-    }
+    load();
   }, []);
 
   async function rate(rating: LearnRating) {
@@ -64,7 +57,6 @@ export default function LearnReview() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          password,
           cardId: current.id,
           rating,
           today: localToday(),
@@ -100,14 +92,10 @@ export default function LearnReview() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [current, revealed, password, saving]);
-
-  if (!password) {
-    return <LearnUnlock onUnlock={(pwd) => { setPassword(pwd); load(pwd); }} />;
-  }
+  }, [current, revealed, saving]);
 
   if (cards === null) {
-    return <p className="text-sm text-text-secondary">Loading…</p>;
+    return <p className="text-sm text-text-secondary">{error || "Loading…"}</p>;
   }
 
   if (!current) {

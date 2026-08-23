@@ -1,4 +1,4 @@
-import { verifyToolsPassword } from "@/lib/tools-auth";
+import { verifyToolsAuthCookie, verifyToolsPassword } from "@/lib/tools-auth";
 
 export function todayLocal(value?: string | null): string {
   if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
@@ -25,6 +25,9 @@ export function requirePassword(
   request: Request,
   body?: Record<string, unknown>,
 ) {
+  if (verifyToolsAuthCookie(request.headers.get("cookie"))) {
+    return readPassword(request, body) || "session";
+  }
   const password = readPassword(request, body);
   if (!verifyToolsPassword(password)) return null;
   return password;

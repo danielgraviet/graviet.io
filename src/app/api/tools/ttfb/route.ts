@@ -1,9 +1,24 @@
 import { runDaytonaTtfbProbe, TtfbProbeError } from "@/lib/daytona-ttfb";
+import { getTtfbWatchlist, recordTtfbSample } from "@/lib/ttfb-history";
 import { buildTtfbProbeInput, TtfbInputError } from "@/lib/ttfb";
-import { verifyToolsPassword } from "@/lib/tools-auth";
+import { isToolsAuthenticated } from "@/lib/tools-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 45;
+
+export async function GET(request: Request) {
+  if (!isToolsAuthenticated(request)) {
+    return Response.json({ error: "Invalid tools password." }, { status: 401 });
+  }
+
+  try {
+    const watchlist = await getTtfbWatchlist();
+    return Response.json({ watchlist });
+  } catch (error) {
+    console.error("TTFB history load failed", error);
+    return Response.json({ error: "Failed to load TTFB history." }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -17,7 +32,7 @@ export async function POST(request: Request) {
   const payload = body && typeof body === "object" ? body : {};
   const { password, url } = payload as { password?: unknown; url?: unknown };
 
-  if (!verifyToolsPassword(password)) {
+  if (!isToolsAuthenticated(request, password)) {
     return Response.json({ error: "Invalid tools password." }, { status: 401 });
   }
 
@@ -25,7 +40,14 @@ export async function POST(request: Request) {
     const input = buildTtfbProbeInput(url);
     const result = await runDaytonaTtfbProbe(input);
 
-    return Response.json(result);
+    try {
+      await recordTtfbSample(result);
+    } catch (error) {
+      console.error("TTFB history save failed", error);
+    }
+
+    const watchlist = await getTtfbWatchlist().catch(() => []);
+    return Response.json({ ...result, watchlist });
   } catch (error) {
     if (error instanceof TtfbInputError) {
       return Response.json({ error: error.message }, { status: 400 });

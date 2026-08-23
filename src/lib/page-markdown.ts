@@ -24,15 +24,9 @@ function absolute(href: string): string {
 }
 
 const NAV = [
+  { href: "/blog", label: "Writing" },
   { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-  { href: "/projects", label: "Projects" },
-  { href: "/blog", label: "Blog" },
-  { href: "/resume.pdf", label: "Resume" },
-  { href: "/library", label: "Library" },
-  { href: "/tools", label: "Tools" },
-  { href: "/lifestyle", label: "Lifestyle" },
+  { href: "/tools", label: "Tooling" },
 ];
 
 async function homeMarkdown(): Promise<string> {
@@ -80,11 +74,9 @@ async function contactMarkdown(): Promise<string> {
       title: "Contact | graviet.io",
       description: "Get in touch",
     }) +
-    `# Get in Touch\n\nI'd love to hear from you.\n\n` +
+    `# Elsewhere\n\n` +
     `- [GitHub](https://github.com/danielgraviet) — Open source work and projects\n` +
-    `- [LinkedIn](https://www.linkedin.com/in/danielthigraviet/) — Connect professionally\n` +
-    `- [X](https://x.com/lilgrav) — Follow along and say hi\n` +
-    `- [Email](mailto:danny@graviet.io) — Drop me a line anytime\n`
+    `- [X](https://x.com/lilgrav) — Follow along\n`
   );
 }
 
@@ -218,24 +210,12 @@ async function toolsMarkdown(): Promise<string> {
       description: "Site tools and stack",
     }) +
     `# Tools\n\n` +
-    `## Site Tools\n\n` +
     `- [TTFB Tool](${absolute("/tools/ttfb")}) — Measure time to first byte from an ephemeral Daytona sandbox.\n` +
-    `- [Learn](${absolute("/tools/learn")}) — Curriculum and spaced-repetition quizzes (password-gated).\n` +
-    `- [Work Log](${absolute("/tools/work-log")}) — Daily work notes with tags and search (password-gated).\n` +
-    `- [Household Budget](${absolute("/tools/budget")}) — Private shared spending dashboard (password-gated).\n` +
-    `- [Interview Timer](${absolute("/interview-tool")}) — Timed interview practice.\n\n` +
-    `## Development\n\n` +
-    `- **Cursor** — VS Code-based editor of choice.\n` +
-    `- **Terminal** — The default macOS terminal.\n` +
-    `- **Codex / Claude Code** — I switch between them for AI-assisted coding.\n\n` +
-    `## Stack\n\n` +
-    `- **Python** — My primary programming language.\n` +
-    `- **Next.js** — Go-to framework for web apps and this site.\n` +
-    `- **Daytona** — Sandboxes and developer tooling.\n\n` +
-    `## Apps & Services\n\n` +
-    `- **Notion** — Notes, projects, and long-form thinking.\n` +
-    `- **Google Docs** — Simple documents and collaboration.\n` +
-    `- **Brave Browser** — Browser of choice for CPU efficiency.\n`
+    `- [Learn](${absolute("/tools/learn")}) — Curriculum and spaced-repetition quizzes.\n` +
+    `- [Work Log](${absolute("/tools/work-log")}) — Daily work notes with tags and search.\n` +
+    `- [Household Budget](${absolute("/tools/budget")}) — Private shared spending dashboard.\n` +
+    `- [Interview Timer](${absolute("/interview-tool")}) — Timed interview practice.\n` +
+    `- [Go-Explore Demo](${absolute("/daytona-search-demo")}) — How sandbox snapshots let agents branch from saved progress.\n`
   );
 }
 

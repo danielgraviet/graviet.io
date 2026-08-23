@@ -1,7 +1,8 @@
-import { verifyBudgetAuthCookie } from "@/lib/tools-auth";
+import { verifyBudgetAuthCookie, verifyToolsAuthCookie } from "@/lib/tools-auth";
 
 export function requireBudgetSession(request: Request) {
-  return verifyBudgetAuthCookie(request.headers.get("cookie"));
+  const cookie = request.headers.get("cookie");
+  return verifyBudgetAuthCookie(cookie) || verifyToolsAuthCookie(cookie);
 }
 
 export function budgetUnauthorized() {
