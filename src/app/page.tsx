@@ -13,7 +13,7 @@ export default function Home() {
       <p>
         Hey, I&apos;m Daniel. I&apos;m a Research Engineer at Daytona. Currently
         finishing up CS degree at BYU. I am interested in the
-        systems side of machine learning. Infrastructure of reliable and scalable
+        systems side of machine learning. Infrastructure for reliable and scalable
         reinforcement learning rollouts, model serving, and more.
       </p>
 
