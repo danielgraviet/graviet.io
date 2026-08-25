@@ -60,6 +60,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the site, or [http:/
 
 The private household budget at `/tools/budget` uses Neon and Plaid Transactions. Copy the Plaid variables from `.env.local.example`, generate `BUDGET_TOKEN_ENCRYPTION_KEY` with `openssl rand -base64 32`, and configure the same HTTPS `PLAID_REDIRECT_URI` in the Plaid Dashboard before connecting Wells Fargo. Wells Fargo requires a Plaid Production OAuth integration; Sandbox works for development with Plaid test institutions.
 
+## Work-log auto-tagging
+
+The private work log suggests tags through Groq using only tags that already exist in the work-log vocabulary. Add `GROQ_API_KEY` to the local and Vercel environments. `GROQ_TAGGING_MODEL` defaults to `openai/gpt-oss-20b`. If Groq is not configured or temporarily unavailable, suggestions automatically fall back to local keyword matching.
+
 ## Essay Idea Pipeline
 
 Use `content/ideas/` to track essay titles you have not started, partially started, or are actively drafting. The goal is to keep idea capture lightweight while making it easy for a coding agent to turn an idea file into a publishable post later.
