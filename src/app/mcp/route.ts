@@ -28,7 +28,7 @@ const TOOLS = [
   {
     name: "get_page_markdown",
     description:
-      "Return a markdown representation of a public site path (e.g. /, /about, /blog/slug)",
+      "Return a markdown representation of a public site path (e.g. /, /tools, /blog/slug)",
     inputSchema: {
       type: "object",
       properties: {

@@ -14,7 +14,6 @@ const HOMEPAGE_LINK_HEADER = [
   '</auth.md>; rel="service-doc"',
   '</.well-known/agent-index.json>; rel="describedby"',
   '</sitemap.xml>; rel="describedby"',
-  '</about>; rel="service-doc"',
   '</tools>; rel="service-doc"',
 ].join(", ");
 
@@ -51,13 +50,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/about",
-    "/contact",
-    "/projects",
     "/blog",
     "/blog/:path*",
-    "/library",
-    "/lifestyle",
     "/tools",
     "/tools/:path*",
     "/interview-tool",
