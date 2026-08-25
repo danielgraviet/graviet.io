@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Link2, Loader2, Lock, RefreshCw, Tags } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CreditCard, Link2, Loader2, Lock, RefreshCw, Tags } from "lucide-react";
 import type { BudgetAccount, BudgetDashboard } from "@/lib/budget";
 
 declare global {
@@ -18,6 +18,26 @@ declare global {
 }
 
 const CHART_COLORS = ["#3d7775", "#6e8f5c", "#b4834f", "#77749a", "#a26873", "#6991ad", "#8a8272", "#555"];
+
+type Subscription = {
+  name: string;
+  kind: "Work" | "Personal";
+  cost: number | null;
+  billingPeriod: "month" | "year";
+  card: string | null;
+  detail?: string;
+  estimated?: boolean;
+};
+
+// Subscriptions are intentionally maintained by hand and are not derived from Plaid transactions.
+const SUBSCRIPTIONS: Subscription[] = [
+  { name: "X", kind: "Work", cost: 8, billingPeriod: "month", card: "Brex" },
+  { name: "ChatGPT", kind: "Personal", cost: 20, billingPeriod: "month", card: null },
+  { name: "Cursor", kind: "Personal", cost: 20, billingPeriod: "month", card: null },
+  { name: "Notability", kind: "Personal", cost: 19.99, billingPeriod: "year", card: null },
+  { name: "iCloud+", kind: "Personal", cost: 1, billingPeriod: "month", card: null, detail: "50 GB" },
+  { name: "Bookends", kind: "Personal", cost: 30, billingPeriod: "year", card: null, detail: "Reading app", estimated: true },
+];
 
 function currentMonth() {
   return new Date().toISOString().slice(0, 7);
@@ -279,6 +299,7 @@ export default function BudgetTool() {
         <Metric label="Posted transactions" value={String(dashboard.transactionCount)} />
         <Metric label="Included accounts" value={String(dashboard.accounts.filter((account) => account.selected).length)} />
       </div>
+      <Subscriptions subscriptions={SUBSCRIPTIONS} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <CategoryChart totals={dashboard.categoryTotals} />
         <TrendChart totals={dashboard.monthlyTotals} />
@@ -317,6 +338,51 @@ function AccountSelection({ accounts, selectedIds, setSelectedIds, loading, erro
 }
 
 function Metric({ label, value }: { label: string; value: string }) { return <div className="border border-border p-4"><p className="text-sm font-semibold text-text-secondary">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>; }
+
+function Subscriptions({ subscriptions }: { subscriptions: Subscription[] }) {
+  const monthlyEquivalent = subscriptions.reduce(
+    (total, subscription) => total + (subscription.cost === null ? 0 : subscription.cost / (subscription.billingPeriod === "year" ? 12 : 1)),
+    0,
+  );
+
+  return (
+    <section className="border border-border p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-text-secondary" />
+            <h2 className="text-lg font-semibold">Subscriptions</h2>
+          </div>
+          <p className="mt-1 text-sm text-text-secondary">Maintained manually, separate from Plaid transactions.</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Est. monthly equivalent</p>
+          <p className="mt-1 text-xl font-semibold">{money(monthlyEquivalent)}</p>
+        </div>
+      </div>
+      <div className="mt-5 border-t border-border">
+        {subscriptions.map((subscription) => (
+          <div key={`${subscription.kind}-${subscription.name}`} className="grid gap-2 border-b border-border py-3 sm:grid-cols-[minmax(0,1fr)_8rem_10rem_7rem] sm:items-center">
+            <div>
+              <p className="font-semibold">{subscription.name}</p>
+              {subscription.detail && <p className="text-xs text-text-secondary">{subscription.detail}</p>}
+            </div>
+            <p className="text-sm text-text-secondary">{subscription.kind}</p>
+            <p className="text-sm">
+              <span className="sm:hidden">Card: </span>
+              {subscription.card || <span className="text-text-secondary">Not specified</span>}
+            </p>
+            <p className="font-semibold sm:text-right">
+              {subscription.cost === null
+                ? <span className="text-sm font-normal text-text-secondary">Price not specified</span>
+                : `${subscription.estimated ? "~" : ""}${money(subscription.cost)}/${subscription.billingPeriod === "year" ? "yr" : "mo"}`}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function CategoryChart({ totals }: { totals: BudgetDashboard["categoryTotals"] }) {
   const total = totals.reduce((sum, item) => sum + item.total, 0);
