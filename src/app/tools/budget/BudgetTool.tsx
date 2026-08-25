@@ -300,7 +300,7 @@ export default function BudgetTool() {
         <Metric label="Included accounts" value={String(dashboard.accounts.filter((account) => account.selected).length)} />
       </div>
       <Subscriptions subscriptions={SUBSCRIPTIONS} />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid gap-6">
         <CategoryChart totals={dashboard.categoryTotals} />
         <TrendChart totals={dashboard.monthlyTotals} />
       </div>
