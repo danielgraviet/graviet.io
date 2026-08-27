@@ -27,7 +27,7 @@ type PersonRow = {
   id: number;
   name: string;
   status: OrbitStatus;
-  last_contacted_on: string | null;
+  last_contacted_on: unknown;
   latest_contact_note: string | null;
   contact_count: number;
   created_at: string;
@@ -37,7 +37,7 @@ type PersonRow = {
 type ContactRow = {
   id: number;
   person_id: number;
-  contacted_on: string;
+  contacted_on: unknown;
   note: string;
   created_at: string;
   updated_at: string;
@@ -63,6 +63,17 @@ export function isOrbitDate(value: unknown): value is string {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
+export function toOrbitDate(value: unknown): string | null {
+  if (typeof value === "string") {
+    const dateOnly = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+    if (dateOnly && isOrbitDate(dateOnly)) return dateOnly;
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return null;
+}
+
 const statusRank: Record<OrbitStatus, number> = { red: 0, orange: 1, green: 2 };
 
 export function compareOrbitPeople(a: OrbitPerson, b: OrbitPerson): number {
@@ -79,7 +90,7 @@ function mapPerson(row: PersonRow): OrbitPerson {
     id: row.id,
     name: row.name,
     status: row.status,
-    lastContactedOn: row.last_contacted_on ? String(row.last_contacted_on).slice(0, 10) : null,
+    lastContactedOn: toOrbitDate(row.last_contacted_on),
     latestContactNote: row.latest_contact_note ?? "",
     contactCount: Number(row.contact_count),
     createdAt: row.created_at,
@@ -91,7 +102,7 @@ function mapContact(row: ContactRow): OrbitContact {
   return {
     id: row.id,
     personId: row.person_id,
-    contactedOn: String(row.contacted_on).slice(0, 10),
+    contactedOn: toOrbitDate(row.contacted_on) ?? "",
     note: row.note,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

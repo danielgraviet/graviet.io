@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareOrbitPeople, isOrbitDate, normalizeOrbitName, type OrbitPerson } from "./orbit";
+import { compareOrbitPeople, isOrbitDate, normalizeOrbitName, toOrbitDate, type OrbitPerson } from "./orbit";
 
 function person(name: string, status: OrbitPerson["status"], lastContactedOn: string | null): OrbitPerson {
   return { id: 1, name, status, lastContactedOn, latestContactNote: "", contactCount: 0, createdAt: "", updatedAt: "" };
@@ -27,5 +27,11 @@ describe("Orbit helpers", () => {
     expect(isOrbitDate("2026-08-27")).toBe(true);
     expect(isOrbitDate("2026-02-30")).toBe(false);
     expect(isOrbitDate("08/27/2026")).toBe(false);
+  });
+
+  it("normalizes database date values without producing invalid display dates", () => {
+    expect(toOrbitDate("2026-08-27T00:00:00.000Z")).toBe("2026-08-27");
+    expect(toOrbitDate(new Date("2026-08-27T00:00:00.000Z"))).toBe("2026-08-27");
+    expect(toOrbitDate("not a date")).toBeNull();
   });
 });
