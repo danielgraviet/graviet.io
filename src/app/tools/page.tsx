@@ -8,6 +8,11 @@ export const metadata: Metadata = {
 
 const items: { name: string; description: string; href: string }[] = [
   {
+    name: "Orbit",
+    description: "Keep important friendships close with a simple relationship pulse.",
+    href: "/tools/orbit",
+  },
+  {
     name: "TTFB Tool",
     description:
       "Measure saved sites from a Daytona sandbox and track TTFB over time.",
