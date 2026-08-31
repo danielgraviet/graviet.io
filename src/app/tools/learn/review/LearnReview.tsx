@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { learnQuery, localToday } from "@/lib/learn/client";
+import {
+  checkLearningAnswer,
+  type LearningCheck,
+} from "@/lib/learn/learning-check";
 import type { LearnRating } from "@/lib/learn/sm2";
 
 type Card = {
@@ -18,19 +22,32 @@ const RATINGS: { id: LearnRating; label: string; hint: string }[] = [
   { id: "easy", label: "Easy", hint: "4" },
 ];
 
+const TYPED_MODE_KEY = "learn-typed-answer-mode";
+
 export default function LearnReview() {
   const [cards, setCards] = useState<Card[] | null>(null);
   const [due, setDue] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [typedMode, setTypedMode] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(TYPED_MODE_KEY) === "true",
+  );
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [learningCheck, setLearningCheck] = useState<LearningCheck | null>(
+    null,
+  );
 
   const current = cards?.[0] ?? null;
 
   async function load() {
     setError(null);
     try {
-      const response = await fetch(`/api/tools/learn/review/queue?${learnQuery()}`);
+      const response = await fetch(
+        `/api/tools/learn/review/queue?${learnQuery()}`,
+      );
       const payload = await response.json();
       if (!response.ok) {
         setError(payload.error || "Failed to load queue.");
@@ -45,8 +62,29 @@ export default function LearnReview() {
   }
 
   useEffect(() => {
+    // Queue loading is intentionally kicked off once when the review screen mounts.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, []);
+
+  function resetAnswer() {
+    setRevealed(false);
+    setTypedAnswer("");
+    setLearningCheck(null);
+  }
+
+  function toggleTypedMode() {
+    const next = !typedMode;
+    setTypedMode(next);
+    window.localStorage.setItem(TYPED_MODE_KEY, String(next));
+    resetAnswer();
+  }
+
+  function checkAnswer() {
+    if (!current || !typedAnswer.trim()) return;
+    setLearningCheck(checkLearningAnswer(typedAnswer, current.back));
+    setRevealed(true);
+  }
 
   async function rate(rating: LearnRating) {
     if (!current || saving) return;
@@ -69,7 +107,7 @@ export default function LearnReview() {
       }
       setCards(payload.cards as Card[]);
       setDue(payload.stats?.due ?? 0);
-      setRevealed(false);
+      resetAnswer();
     } catch {
       setError("Failed to save review.");
     } finally {
@@ -80,7 +118,10 @@ export default function LearnReview() {
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (!current) return;
-      if (event.key === " " || event.key === "Enter") {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, [contenteditable='true']"))
+        return;
+      if (!typedMode && (event.key === " " || event.key === "Enter")) {
         event.preventDefault();
         setRevealed(true);
       }
@@ -92,7 +133,9 @@ export default function LearnReview() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [current, revealed, saving]);
+    // `rate` uses the current render's card and saving state, both listed above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, revealed, saving, typedMode]);
 
   if (cards === null) {
     return <p className="text-sm text-text-secondary">{error || "Loading…"}</p>;
@@ -117,25 +160,109 @@ export default function LearnReview() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-text-secondary">{due} due</p>
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm text-text-secondary">{due} due</p>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={typedMode}
+          onClick={toggleTypedMode}
+          className="inline-flex items-center gap-2 text-sm font-semibold"
+        >
+          <span
+            aria-hidden="true"
+            className={`relative h-5 w-9 border transition-colors ${
+              typedMode
+                ? "border-foreground bg-foreground"
+                : "border-border bg-background"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-3.5 w-3.5 bg-background transition-transform ${
+                typedMode
+                  ? "translate-x-4"
+                  : "translate-x-0.5 border border-border"
+              }`}
+            />
+          </span>
+          Type answer
+        </button>
+      </div>
       {error && <p className="text-sm text-text-secondary">{error}</p>}
 
       <article className="border-y border-border py-6">
         <p className="whitespace-pre-wrap text-lg font-semibold leading-relaxed">
           {current.front}
         </p>
-        {revealed ? (
-          <p className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-text-secondary">
-            {current.back}
-          </p>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setRevealed(true)}
-            className="mt-6 inline-flex h-11 items-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background"
+        {typedMode && !revealed && (
+          <form
+            className="mt-6 space-y-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              checkAnswer();
+            }}
           >
-            Reveal
-          </button>
+            <label
+              htmlFor="learning-answer"
+              className="block text-sm font-semibold"
+            >
+              Your answer
+            </label>
+            <textarea
+              id="learning-answer"
+              rows={4}
+              autoFocus
+              value={typedAnswer}
+              onChange={(event) => setTypedAnswer(event.target.value)}
+              placeholder="Explain what you remember…"
+              className="w-full resize-y border border-border bg-background p-3 text-base leading-relaxed outline-none transition-colors placeholder:text-text-secondary focus:border-foreground"
+            />
+            <button
+              type="submit"
+              disabled={!typedAnswer.trim()}
+              className="inline-flex h-11 items-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Check answer
+            </button>
+          </form>
+        )}
+        {revealed ? (
+          <div className="mt-6 space-y-4">
+            {learningCheck && (
+              <div className="border border-border bg-muted p-3 text-sm">
+                <p className="font-semibold">
+                  {learningCheck.hasMatch
+                    ? "You found matching words."
+                    : "No matching words yet."}
+                </p>
+                <p className="mt-1 text-text-secondary">
+                  {learningCheck.matched.length} of{" "}
+                  {learningCheck.answerWordCount} answer words matched
+                  {learningCheck.matched.length > 0 &&
+                    `: ${learningCheck.matched.join(", ")}`}
+                  .
+                </p>
+              </div>
+            )}
+            <div>
+              {typedMode && (
+                <p className="mb-1 text-sm font-semibold">Answer</p>
+              )}
+              <p className="whitespace-pre-wrap text-base leading-relaxed text-text-secondary">
+                {current.back}
+              </p>
+            </div>
+          </div>
+        ) : (
+          !typedMode && (
+            <button
+              type="button"
+              onClick={() => setRevealed(true)}
+              className="mt-6 inline-flex h-11 items-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background"
+            >
+              Reveal
+            </button>
+          )
         )}
       </article>
 
