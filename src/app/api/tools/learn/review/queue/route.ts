@@ -9,7 +9,7 @@ export async function GET(request: Request) {
 
   try {
     const [cards, stats] = await Promise.all([
-      getReviewQueue(20),
+      getReviewQueue(50),
       getLearnStats(today),
     ]);
     return Response.json({ cards, stats });

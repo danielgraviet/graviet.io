@@ -164,9 +164,12 @@ export async function ensureLearnSchema(): Promise<void> {
           id serial PRIMARY KEY,
           card_id integer NOT NULL REFERENCES learn_cards(id) ON DELETE CASCADE,
           rating text NOT NULL,
+          client_review_id text,
           reviewed_at timestamptz NOT NULL DEFAULT now()
         )
       `;
+
+      await db`ALTER TABLE learn_reviews ADD COLUMN IF NOT EXISTS client_review_id text`;
 
       await db`
         CREATE TABLE IF NOT EXISTS learn_review_days (
@@ -178,6 +181,7 @@ export async function ensureLearnSchema(): Promise<void> {
       await db`CREATE INDEX IF NOT EXISTS learn_topics_subject_idx ON learn_topics (subject_id, domain_id)`;
       await db`CREATE INDEX IF NOT EXISTS learn_reviews_reviewed_idx ON learn_reviews (reviewed_at DESC)`;
       await db`CREATE INDEX IF NOT EXISTS learn_reviews_card_idx ON learn_reviews (card_id)`;
+      await db`CREATE UNIQUE INDEX IF NOT EXISTS learn_reviews_client_review_idx ON learn_reviews (client_review_id) WHERE client_review_id IS NOT NULL`;
 
       await db`
         CREATE TABLE IF NOT EXISTS learn_meta (
@@ -221,7 +225,7 @@ async function seedCurriculum() {
     runtime = created[0];
   }
 
-  let inbox = await getSubjectBySlug(INBOX_SUBJECT_SLUG);
+  const inbox = await getSubjectBySlug(INBOX_SUBJECT_SLUG);
   if (!inbox) {
     await db`
       INSERT INTO learn_subjects (slug, title, description)
@@ -819,6 +823,110 @@ export async function answerCard(
   `;
 
   return updated[0] ? mapCard(updated[0]) : null;
+}
+
+export type BatchReviewInput = {
+  reviewId: string;
+  cardId: number;
+  rating: LearnRating;
+  reviewedAt: string;
+  originalLastReviewedAt: string | null;
+};
+
+export class BatchReviewConflictError extends Error {
+  constructor() {
+    super("One or more cards were reviewed in another session.");
+    this.name = "BatchReviewConflictError";
+  }
+}
+
+function normalizedTimestamp(value: string | Date | null): string | null {
+  if (value === null) return null;
+  return new Date(value).toISOString();
+}
+
+export async function answerCards(
+  reviews: BatchReviewInput[],
+  today: string,
+): Promise<number> {
+  if (reviews.length === 0) return 0;
+  await ensureLearnSchema();
+  const db = sql();
+  const reviewIds = reviews.map((review) => review.reviewId);
+  const existingRows = (await db`
+    SELECT client_review_id FROM learn_reviews
+    WHERE client_review_id = ANY(${reviewIds}::text[])
+  `) as unknown as { client_review_id: string }[];
+  const existingIds = new Set(existingRows.map((row) => row.client_review_id));
+  const pending = reviews.filter((review) => !existingIds.has(review.reviewId));
+  if (pending.length === 0) return 0;
+
+  const cardIds = pending.map((review) => review.cardId);
+  const cardRows = (await db`
+    SELECT * FROM learn_cards WHERE id = ANY(${cardIds}::int[])
+  `) as unknown as CardRow[];
+  const cardsById = new Map(cardRows.map((row) => [row.id, mapCard(row)]));
+
+  const scheduled = pending.map((review) => {
+    const card = cardsById.get(review.cardId);
+    if (
+      !card ||
+      normalizedTimestamp(card.lastReviewedAt) !==
+        normalizedTimestamp(review.originalLastReviewedAt)
+    ) {
+      throw new BatchReviewConflictError();
+    }
+    const next = applySm2(
+      {
+        ease: card.ease,
+        intervalDays: card.intervalDays,
+        repetitions: card.repetitions,
+        lapses: card.lapses,
+        dueAt: card.dueAt,
+        lastReviewedAt: card.lastReviewedAt,
+      },
+      review.rating,
+      new Date(review.reviewedAt),
+    );
+    return { review, next };
+  });
+
+  await db.transaction((tx) => [
+    ...scheduled.flatMap(({ review, next }) => [
+      tx`
+        UPDATE learn_cards SET
+          ease = ${next.ease},
+          interval_days = ${next.intervalDays},
+          repetitions = ${next.repetitions},
+          lapses = ${next.lapses},
+          due_at = ${next.dueAt}::timestamptz,
+          last_reviewed_at = ${next.lastReviewedAt}::timestamptz
+        WHERE id = ${review.cardId}
+          AND NOT EXISTS (
+            SELECT 1 FROM learn_reviews
+            WHERE client_review_id = ${review.reviewId}
+          )
+      `,
+      tx`
+        INSERT INTO learn_reviews (
+          card_id, rating, client_review_id, reviewed_at
+        )
+        VALUES (
+          ${review.cardId}, ${review.rating}, ${review.reviewId},
+          ${review.reviewedAt}::timestamptz
+        )
+        ON CONFLICT (client_review_id) WHERE client_review_id IS NOT NULL
+        DO NOTHING
+      `,
+    ]),
+    tx`
+      INSERT INTO learn_review_days (reviewed_on)
+      VALUES (${today}::date)
+      ON CONFLICT (reviewed_on) DO NOTHING
+    `,
+  ]);
+
+  return pending.length;
 }
 
 export async function getLearnStats(today: string): Promise<LearnStats> {
