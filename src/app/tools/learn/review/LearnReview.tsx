@@ -18,7 +18,7 @@ type Card = {
 const RATINGS: { id: LearnRating; label: string; hint: string }[] = [
   { id: "again", label: "Again", hint: "1" },
   { id: "hard", label: "Hard", hint: "2" },
-  { id: "good", label: "Good", hint: "3" },
+  { id: "good", label: "Good", hint: "3 / Enter" },
   { id: "easy", label: "Easy", hint: "4" },
 ];
 
@@ -126,10 +126,26 @@ export default function LearnReview() {
         setRevealed(true);
       }
       if (!revealed) return;
-      if (event.key === "1") rate("again");
-      if (event.key === "2") rate("hard");
-      if (event.key === "3") rate("good");
-      if (event.key === "4") rate("easy");
+      if (event.key === "1") {
+        event.preventDefault();
+        rate("again");
+      }
+      if (event.key === "2") {
+        event.preventDefault();
+        rate("hard");
+      }
+      if (event.key === "3") {
+        event.preventDefault();
+        rate("good");
+      }
+      if (event.key === "4") {
+        event.preventDefault();
+        rate("easy");
+      }
+      if (event.key === "Enter" && !target?.matches("button, a")) {
+        event.preventDefault();
+        rate("good");
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -214,9 +230,26 @@ export default function LearnReview() {
               autoFocus
               value={typedAnswer}
               onChange={(event) => setTypedAnswer(event.target.value)}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  checkAnswer();
+                }
+              }}
               placeholder="Explain what you remember…"
+              aria-describedby="learning-answer-shortcut"
               className="w-full resize-y border border-border bg-background p-3 text-base leading-relaxed outline-none transition-colors placeholder:text-text-secondary focus:border-foreground"
             />
+            <p
+              id="learning-answer-shortcut"
+              className="text-xs text-text-secondary"
+            >
+              Enter to check · Shift+Enter for a new line
+            </p>
             <button
               type="submit"
               disabled={!typedAnswer.trim()}
