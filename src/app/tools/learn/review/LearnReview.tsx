@@ -33,6 +33,7 @@ export default function LearnReview() {
   const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
   const ratingLocked = useRef(false);
   const [typedMode, setTypedMode] = useState(
     () =>
@@ -72,6 +73,7 @@ export default function LearnReview() {
       const next: ReviewSession = {
         version: 1,
         today: localToday(),
+        totalDue: payload.stats?.due ?? cards.length,
         cards,
         pendingReviews: [],
       };
@@ -97,6 +99,7 @@ export default function LearnReview() {
     setRevealed(false);
     setTypedAnswer("");
     setLearningCheck(null);
+    setCopied(false);
   }
 
   function toggleTypedMode() {
@@ -129,6 +132,17 @@ export default function LearnReview() {
     } catch {
       ratingLocked.current = false;
       setError("Could not save this answer locally. Please try again.");
+    }
+  }
+
+  async function copyQuestionAndAnswer() {
+    if (!current) return;
+    const content = `Question:\n${current.front}\n\nMy answer:\n${typedAnswer.trim()}`;
+    try {
+      await window.navigator.clipboard.writeText(content);
+      setCopied(true);
+    } catch {
+      setError("Could not copy to the clipboard.");
     }
   }
 
@@ -295,14 +309,17 @@ export default function LearnReview() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <button
-          type="button"
-          disabled={saving || session.pendingReviews.length === 0}
-          onClick={saveSession}
-          className="inline-flex h-9 items-center border border-foreground px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {saving ? "Saving…" : "Save"}
-        </button>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-text-secondary">{session.totalDue} due</p>
+          <button
+            type="button"
+            disabled={saving || session.pendingReviews.length === 0}
+            onClick={saveSession}
+            className="inline-flex h-9 items-center border border-foreground px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
         <button
           type="button"
           role="switch"
@@ -312,17 +329,17 @@ export default function LearnReview() {
         >
           <span
             aria-hidden="true"
-            className={`relative h-5 w-9 border transition-colors ${
+            className={`relative h-6 w-10 shrink-0 rounded-full border transition-colors ${
               typedMode
                 ? "border-foreground bg-foreground"
-                : "border-border bg-background"
+                : "border-border bg-muted"
             }`}
           >
             <span
-              className={`absolute top-0.5 h-3.5 w-3.5 bg-background transition-transform ${
+              className={`absolute left-1 top-1 h-4 w-4 rounded-full transition-[transform,background-color] ${
                 typedMode
-                  ? "translate-x-4"
-                  : "translate-x-0.5 border border-border"
+                  ? "translate-x-4 bg-background"
+                  : "translate-x-0 bg-foreground"
               }`}
             />
           </span>
@@ -335,6 +352,13 @@ export default function LearnReview() {
         <p className="whitespace-pre-wrap text-lg font-semibold leading-relaxed">
           {current.front}
         </p>
+        <button
+          type="button"
+          onClick={copyQuestionAndAnswer}
+          className="mt-3 text-xs font-semibold text-text-secondary underline decoration-border underline-offset-4"
+        >
+          {copied ? "Copied" : "Copy question + answer"}
+        </button>
         {typedMode && !revealed && (
           <form
             className="mt-6 space-y-3"
@@ -354,7 +378,10 @@ export default function LearnReview() {
               rows={4}
               autoFocus
               value={typedAnswer}
-              onChange={(event) => setTypedAnswer(event.target.value)}
+              onChange={(event) => {
+                setTypedAnswer(event.target.value);
+                setCopied(false);
+              }}
               onKeyDown={(event) => {
                 if (
                   event.key === "Enter" &&

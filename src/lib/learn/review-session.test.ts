@@ -9,6 +9,7 @@ import {
 const session: ReviewSession = {
   version: 1,
   today: "2026-09-02",
+  totalDue: 140,
   cards: [
     { id: 7, front: "Question", back: "Answer", lastReviewedAt: null },
     {
@@ -31,6 +32,7 @@ describe("review session", () => {
     );
 
     expect(next.cards.map((card) => card.id)).toEqual([8]);
+    expect(next.totalDue).toBe(139);
     expect(next.pendingReviews).toEqual([
       {
         reviewId: "review-1",
@@ -44,6 +46,11 @@ describe("review session", () => {
 
   it("round-trips a valid stored session", () => {
     expect(parseReviewSession(JSON.stringify(session))).toEqual(session);
+  });
+
+  it("restores sessions saved before the total-due field existed", () => {
+    const olderSession = { ...session, totalDue: undefined };
+    expect(parseReviewSession(JSON.stringify(olderSession))?.totalDue).toBe(2);
   });
 
   it("rejects malformed or outdated stored data", () => {

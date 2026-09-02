@@ -20,6 +20,7 @@ export type PendingReview = {
 export type ReviewSession = {
   version: 1;
   today: string;
+  totalDue: number;
   cards: ReviewSessionCard[];
   pendingReviews: PendingReview[];
 };
@@ -66,7 +67,12 @@ export function parseReviewSession(value: string | null): ReviewSession | null {
     ) {
       return null;
     }
-    return session as ReviewSession;
+    return {
+      ...(session as ReviewSession),
+      totalDue: Number.isInteger(session.totalDue)
+        ? Math.max(0, Number(session.totalDue))
+        : session.cards.length,
+    };
   } catch {
     return null;
   }
@@ -129,6 +135,7 @@ export function addReview(
   if (!card) return session;
   return {
     ...session,
+    totalDue: Math.max(0, session.totalDue - 1),
     cards: session.cards.slice(1),
     pendingReviews: [
       ...session.pendingReviews,
