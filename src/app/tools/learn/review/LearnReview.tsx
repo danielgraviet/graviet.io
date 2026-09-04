@@ -25,6 +25,13 @@ const RATINGS: { id: LearnRating; label: string; hint: string }[] = [
 
 const TYPED_MODE_KEY = "learn-typed-answer-mode";
 
+type Subject = {
+  id: number;
+  slug: string;
+  title: string;
+  dueCount: number;
+};
+
 export default function LearnReview() {
   const [session, setSession] = useState<ReviewSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +41,8 @@ export default function LearnReview() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
   const ratingLocked = useRef(false);
   const [typedMode, setTypedMode] = useState(
     () =>
@@ -47,14 +56,15 @@ export default function LearnReview() {
 
   const current = session?.cards[0] ?? null;
 
-  async function load() {
+  async function load(subjectSlug = selectedSubject, skipStored = false) {
     setLoading(true);
     setError(null);
     setSaved(false);
-    const stored = parseReviewSession(
-      window.localStorage.getItem(REVIEW_SESSION_KEY),
-    );
+    const stored = skipStored
+      ? null
+      : parseReviewSession(window.localStorage.getItem(REVIEW_SESSION_KEY));
     if (stored) {
+      setSelectedSubject(stored.subjectSlug ?? "");
       setSession(stored);
       setLoading(false);
       return;
@@ -62,7 +72,9 @@ export default function LearnReview() {
     window.localStorage.removeItem(REVIEW_SESSION_KEY);
     try {
       const response = await fetch(
-        `/api/tools/learn/review/queue?${learnQuery()}`,
+        `/api/tools/learn/review/queue?${learnQuery(
+          subjectSlug ? { subject: subjectSlug } : undefined,
+        )}`,
       );
       const payload = await response.json();
       if (!response.ok) {
@@ -70,9 +82,11 @@ export default function LearnReview() {
         return;
       }
       const cards = payload.cards as ReviewSessionCard[];
+      setSubjects(payload.subjects as Subject[]);
       const next: ReviewSession = {
         version: 1,
         today: localToday(),
+        subjectSlug: subjectSlug || null,
         totalDue: payload.stats?.due ?? cards.length,
         cards,
         pendingReviews: [],
@@ -93,7 +107,31 @@ export default function LearnReview() {
     // Queue loading is intentionally kicked off once when the review screen mounts.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+    // `load` intentionally captures only the initial subject selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    async function loadSubjects() {
+      try {
+        const response = await fetch(`/api/tools/learn/subjects?${learnQuery()}`);
+        const payload = await response.json();
+        if (response.ok) setSubjects(payload.subjects as Subject[]);
+      } catch {
+        // A stored review session remains usable while offline.
+      }
+    }
+    loadSubjects();
+  }, []);
+
+  function changeSubject(subjectSlug: string) {
+    if (session?.pendingReviews.length) return;
+    window.localStorage.removeItem(REVIEW_SESSION_KEY);
+    setSelectedSubject(subjectSlug);
+    setSession(null);
+    resetAnswer();
+    void load(subjectSlug, true);
+  }
 
   function resetAnswer() {
     setRevealed(false);
@@ -157,6 +195,7 @@ export default function LearnReview() {
         body: JSON.stringify({
           reviews: session.pendingReviews,
           today: session.today,
+          subjectSlug: session.subjectSlug,
         }),
       });
       const payload = await response.json();
@@ -247,7 +286,7 @@ export default function LearnReview() {
           {remainingDue > 0 && (
             <button
               type="button"
-              onClick={load}
+              onClick={() => load()}
               className="text-sm font-semibold underline decoration-border underline-offset-4"
             >
               Review more
@@ -276,6 +315,22 @@ export default function LearnReview() {
     const hasPendingReviews = session.pendingReviews.length > 0;
     return (
       <div className="space-y-4 border-y border-border py-6">
+        <label className="grid max-w-xs gap-1 text-xs font-semibold text-text-secondary">
+          Study
+          <select
+            value={selectedSubject}
+            disabled={saving || hasPendingReviews}
+            onChange={(event) => changeSubject(event.target.value)}
+            className="h-9 border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <option value="">All subjects</option>
+            {subjects.map((subject) => (
+              <option key={subject.id} value={subject.slug}>
+                {subject.title} ({subject.dueCount})
+              </option>
+            ))}
+          </select>
+        </label>
         <p className="text-base font-semibold">
           {hasPendingReviews ? "Session complete." : "Caught up."}
         </p>
@@ -308,7 +363,7 @@ export default function LearnReview() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
           <p className="text-sm text-text-secondary">{session.totalDue} due</p>
           <button
@@ -320,32 +375,55 @@ export default function LearnReview() {
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={typedMode}
-          onClick={toggleTypedMode}
-          className="inline-flex items-center gap-2 text-sm font-semibold"
-        >
-          <span
-            aria-hidden="true"
-            className={`relative h-6 w-10 shrink-0 rounded-full border transition-colors ${
-              typedMode
-                ? "border-foreground bg-foreground"
-                : "border-border bg-muted"
-            }`}
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="grid gap-1 text-xs font-semibold text-text-secondary">
+            Study
+            <select
+              value={selectedSubject}
+              disabled={saving || session.pendingReviews.length > 0}
+              onChange={(event) => changeSubject(event.target.value)}
+              className="h-9 border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">All subjects</option>
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.slug}>
+                  {subject.title} ({subject.dueCount})
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={typedMode}
+            onClick={toggleTypedMode}
+            className="inline-flex h-9 items-center gap-2 text-sm font-semibold"
           >
             <span
-              className={`absolute left-1 top-1 h-4 w-4 rounded-full transition-[transform,background-color] ${
+              aria-hidden="true"
+              className={`relative h-6 w-10 shrink-0 rounded-full border transition-colors ${
                 typedMode
-                  ? "translate-x-4 bg-background"
-                  : "translate-x-0 bg-foreground"
+                  ? "border-foreground bg-foreground"
+                  : "border-border bg-muted"
               }`}
-            />
-          </span>
-          Type answer
-        </button>
+            >
+              <span
+                className={`absolute left-1 top-1 h-4 w-4 rounded-full transition-[transform,background-color] ${
+                  typedMode
+                    ? "translate-x-4 bg-background"
+                    : "translate-x-0 bg-foreground"
+                }`}
+              />
+            </span>
+            Type answer
+          </button>
+        </div>
       </div>
+      {session.pendingReviews.length > 0 && (
+        <p className="text-xs text-text-secondary">
+          Save this session before changing subjects.
+        </p>
+      )}
       {error && <p className="text-sm text-text-secondary">{error}</p>}
 
       <article className="border-y border-border py-6">
@@ -440,13 +518,15 @@ export default function LearnReview() {
           </div>
         ) : (
           !typedMode && (
-            <button
-              type="button"
-              onClick={() => setRevealed(true)}
-              className="mt-6 inline-flex h-11 items-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background"
-            >
-              Reveal
-            </button>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setRevealed(true)}
+                className="inline-flex h-11 items-center border border-foreground bg-foreground px-4 text-sm font-semibold text-background"
+              >
+                Reveal
+              </button>
+            </div>
           )
         )}
       </article>

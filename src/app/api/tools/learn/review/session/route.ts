@@ -2,6 +2,7 @@ import {
   answerCards,
   BatchReviewConflictError,
   getLearnStats,
+  listSubjects,
 } from "@/lib/learn/learn";
 import { parseReviewBatch } from "@/lib/learn/review-session";
 import {
@@ -29,7 +30,16 @@ export async function POST(request: Request) {
 
   try {
     const saved = await answerCards(reviews, today);
-    const stats = await getLearnStats(today);
+    const globalStats = await getLearnStats(today);
+    const subjectSlug =
+      typeof body.subjectSlug === "string" ? body.subjectSlug.trim() : "";
+    const subject = subjectSlug
+      ? (await listSubjects()).find((item) => item.slug === subjectSlug)
+      : undefined;
+    const stats = {
+      ...globalStats,
+      due: subject?.dueCount ?? globalStats.due,
+    };
     return Response.json({ saved, stats });
   } catch (error) {
     if (error instanceof BatchReviewConflictError) {

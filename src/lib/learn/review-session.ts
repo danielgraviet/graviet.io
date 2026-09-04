@@ -20,6 +20,7 @@ export type PendingReview = {
 export type ReviewSession = {
   version: 1;
   today: string;
+  subjectSlug?: string | null;
   totalDue: number;
   cards: ReviewSessionCard[];
   pendingReviews: PendingReview[];
@@ -60,6 +61,9 @@ export function parseReviewSession(value: string | null): ReviewSession | null {
     if (
       session.version !== 1 ||
       typeof session.today !== "string" ||
+      (session.subjectSlug !== undefined &&
+        session.subjectSlug !== null &&
+        typeof session.subjectSlug !== "string") ||
       !Array.isArray(session.cards) ||
       !session.cards.every(isCard) ||
       !Array.isArray(session.pendingReviews) ||

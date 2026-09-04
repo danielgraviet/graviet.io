@@ -764,15 +764,26 @@ export async function deleteCard(id: number): Promise<void> {
   await db`DELETE FROM learn_cards WHERE id = ${id}`;
 }
 
-export async function getReviewQueue(limit = 20): Promise<LearnCard[]> {
+export async function getReviewQueue(
+  limit = 20,
+  subjectSlug?: string,
+): Promise<LearnCard[]> {
   await ensureLearnSchema();
   const db = sql();
-  const rows = (await db`
-    SELECT * FROM learn_cards
-    WHERE due_at <= now()
-    ORDER BY due_at ASC, id ASC
-    LIMIT ${limit}
-  `) as unknown as CardRow[];
+  const rows = (subjectSlug
+    ? await db`
+        SELECT c.* FROM learn_cards c
+        JOIN learn_subjects s ON s.id = c.subject_id
+        WHERE c.due_at <= now() AND s.slug = ${subjectSlug}
+        ORDER BY c.due_at ASC, c.id ASC
+        LIMIT ${limit}
+      `
+    : await db`
+        SELECT * FROM learn_cards
+        WHERE due_at <= now()
+        ORDER BY due_at ASC, id ASC
+        LIMIT ${limit}
+      `) as unknown as CardRow[];
   return rows.map(mapCard);
 }
 
