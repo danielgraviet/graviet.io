@@ -8,6 +8,7 @@ import {
   type LearningCheck,
 } from "@/lib/learn/learning-check";
 import type { LearnRating } from "@/lib/learn/sm2";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import {
   addReview,
   parseReviewSession,
@@ -427,9 +428,11 @@ export default function LearnReview() {
       {error && <p className="text-sm text-text-secondary">{error}</p>}
 
       <article className="border-y border-border py-6">
-        <p className="whitespace-pre-wrap text-lg font-semibold leading-relaxed">
-          {current.front}
-        </p>
+        {current.frontHtml ? (
+          <MarkdownRenderer html={current.frontHtml} className="learn-card-markdown text-lg font-semibold" />
+        ) : (
+          <p className="whitespace-pre-wrap text-lg font-semibold leading-relaxed">{current.front}</p>
+        )}
         <button
           type="button"
           onClick={copyQuestionAndAnswer}
@@ -511,9 +514,11 @@ export default function LearnReview() {
               {typedMode && (
                 <p className="mb-1 text-sm font-semibold">Answer</p>
               )}
-              <p className="whitespace-pre-wrap text-base leading-relaxed text-text-secondary">
-                {current.back}
-              </p>
+              {current.backHtml ? (
+                <MarkdownRenderer html={current.backHtml} className="learn-card-markdown text-base text-text-secondary" />
+              ) : (
+                <p className="whitespace-pre-wrap text-base leading-relaxed text-text-secondary">{current.back}</p>
+              )}
             </div>
           </div>
         ) : (

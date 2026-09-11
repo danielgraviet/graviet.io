@@ -1,5 +1,6 @@
 import { createCard, getTopic, listCards } from "@/lib/learn/learn";
 import { readJson, requirePassword, unauthorized } from "@/lib/learn/http";
+import { renderLearnCard } from "@/lib/learn/markdown";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ export async function GET(
     const topic = await getTopic(id);
     if (!topic) return Response.json({ error: "Topic not found." }, { status: 404 });
     const cards = await listCards(id);
-    return Response.json({ topic, cards });
+    return Response.json({ topic, cards: await Promise.all(cards.map(renderLearnCard)) });
   } catch (error) {
     console.error("learn cards GET failed", error);
     return Response.json({ error: "Failed to load cards." }, { status: 500 });
@@ -53,7 +54,7 @@ export async function POST(
       back,
       source: body.source === "parsed" || body.source === "tutor" ? body.source : "manual",
     });
-    return Response.json({ card }, { status: 201 });
+    return Response.json({ card: await renderLearnCard(card) }, { status: 201 });
   } catch (error) {
     console.error("learn cards POST failed", error);
     return Response.json({ error: "Failed to create card." }, { status: 500 });

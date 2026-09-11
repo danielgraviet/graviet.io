@@ -6,6 +6,8 @@ export type ReviewSessionCard = {
   id: number;
   front: string;
   back: string;
+  frontHtml?: string;
+  backHtml?: string;
   lastReviewedAt: string | null;
 };
 
@@ -37,6 +39,8 @@ function isCard(value: unknown): value is ReviewSessionCard {
     Number.isInteger(card.id) &&
     typeof card.front === "string" &&
     typeof card.back === "string" &&
+    (card.frontHtml === undefined || typeof card.frontHtml === "string") &&
+    (card.backHtml === undefined || typeof card.backHtml === "string") &&
     isNullableString(card.lastReviewedAt)
   );
 }

@@ -13,6 +13,7 @@ export function parseQaPairs(notes: string): ParsedCard[] {
   let front: string[] = [];
   let back: string[] = [];
   let mode: "none" | "front" | "back" = "none";
+  let inFence = false;
 
   function flush() {
     const q = front.join("\n").trim();
@@ -24,10 +25,16 @@ export function parseQaPairs(notes: string): ParsedCard[] {
   }
 
   for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      if (mode === "front") front.push(line);
+      else if (mode === "back") back.push(line);
+      continue;
+    }
     const question = line.match(/^\s*Q[:.]\s*(.*)$/i);
     const answer = line.match(/^\s*A[:.]\s*(.*)$/i);
 
-    if (question) {
+    if (!inFence && question) {
       if (front.length && back.length) flush();
       mode = "front";
       front = question[1] ? [question[1]] : [];
@@ -35,9 +42,10 @@ export function parseQaPairs(notes: string): ParsedCard[] {
       continue;
     }
 
-    if (answer) {
+    if (!inFence && answer) {
       mode = "back";
       back = answer[1] ? [answer[1]] : [];
+      if (/^\s*```/.test(answer[1] ?? "")) inFence = true;
       continue;
     }
 

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { learnQuery } from "@/lib/learn/client";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 type Topic = {
   id: number;
@@ -21,6 +22,8 @@ type Card = {
   front: string;
   back: string;
   dueAt: string;
+  frontHtml?: string;
+  backHtml?: string;
 };
 
 const STATUSES = ["todo", "learning", "known"] as const;
@@ -33,6 +36,19 @@ export default function LearnTopic({ id }: { id: number }) {
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState<"front" | "back" | null>(null);
+  const [previewHtml, setPreviewHtml] = useState("");
+
+  async function showPreview(kind: "front" | "back", markdown: string) {
+    setPreview(kind);
+    const response = await fetch("/api/tools/learn/cards/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markdown }),
+    });
+    const payload = await response.json();
+    if (response.ok) setPreviewHtml(payload.html);
+  }
 
   async function load() {
     setError(null);
@@ -244,6 +260,10 @@ export default function LearnTopic({ id }: { id: number }) {
           placeholder="Front (question)"
           className="w-full border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-foreground"
         />
+        <button type="button" onClick={() => showPreview("front", front)} className="text-xs font-semibold underline underline-offset-4">
+          {preview === "front" ? "Refresh front preview" : "Preview front"}
+        </button>
+        {preview === "front" && <MarkdownRenderer html={previewHtml} className="border border-border p-3" />}
         <textarea
           value={back}
           onChange={(event) => setBack(event.target.value)}
@@ -251,6 +271,10 @@ export default function LearnTopic({ id }: { id: number }) {
           placeholder="Back (answer)"
           className="w-full border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-foreground"
         />
+        <button type="button" onClick={() => showPreview("back", back)} className="text-xs font-semibold underline underline-offset-4">
+          {preview === "back" ? "Refresh back preview" : "Preview back"}
+        </button>
+        {preview === "back" && <MarkdownRenderer html={previewHtml} className="border border-border p-3" />}
         <button
           type="submit"
           disabled={saving || !front.trim() || !back.trim()}
@@ -270,10 +294,8 @@ export default function LearnTopic({ id }: { id: number }) {
             <article key={card.id} className="border-b border-border py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-2">
-                  <p className="whitespace-pre-wrap font-semibold">{card.front}</p>
-                  <p className="whitespace-pre-wrap text-sm text-text-secondary">
-                    {card.back}
-                  </p>
+                  {card.frontHtml ? <MarkdownRenderer html={card.frontHtml} className="font-semibold" /> : <p className="whitespace-pre-wrap font-semibold">{card.front}</p>}
+                  {card.backHtml ? <MarkdownRenderer html={card.backHtml} className="text-sm text-text-secondary" /> : <p className="whitespace-pre-wrap text-sm text-text-secondary">{card.back}</p>}
                   <p className="text-xs text-text-secondary">
                     Due {card.dueAt.slice(0, 10)}
                   </p>

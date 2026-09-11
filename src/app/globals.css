@@ -235,3 +235,14 @@ strong {
   overflow-y: hidden;
   padding: 0.5rem 0;
 }
+
+.learn-card-markdown {
+  line-height: 1.65;
+}
+
+.learn-card-markdown p:last-child,
+.learn-card-markdown ul:last-child,
+.learn-card-markdown ol:last-child,
+.learn-card-markdown pre:last-child {
+  margin-bottom: 0;
+}

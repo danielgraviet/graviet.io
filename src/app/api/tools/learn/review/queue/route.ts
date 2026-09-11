@@ -1,5 +1,6 @@
 import { getLearnStats, getReviewQueue, listSubjects } from "@/lib/learn/learn";
 import { requirePassword, todayLocal, unauthorized } from "@/lib/learn/http";
+import { renderLearnCard } from "@/lib/learn/markdown";
 
 export const runtime = "nodejs";
 
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
       ...globalStats,
       due: subject?.dueCount ?? globalStats.due,
     };
-    return Response.json({ cards, stats, subjects });
+    return Response.json({ cards: await Promise.all(cards.map(renderLearnCard)), stats, subjects });
   } catch (error) {
     console.error("learn review queue failed", error);
     return Response.json({ error: "Failed to load review queue." }, { status: 500 });

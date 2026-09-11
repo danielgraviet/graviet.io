@@ -29,4 +29,10 @@ describe("checkLearningAnswer", () => {
       hasMatch: true,
     });
   });
+
+  it("ignores Markdown syntax and TeX commands", () => {
+    expect(
+      checkLearningAnswer("The value is updated with reward and gamma", "**reward** plus \\gamma in $Q(s,a)$"),
+    ).toMatchObject({ hasMatch: true, matched: expect.arrayContaining(["reward", "gamma"]) });
+  });
 });

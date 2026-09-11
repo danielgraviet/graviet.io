@@ -33,4 +33,12 @@ describe("parseQaPairs", () => {
       { front: "Third?", back: "Three" },
     ]);
   });
+
+  it("keeps Q/A-looking lines inside fenced code blocks", () => {
+    expect(
+      parseQaPairs("Q: What does the policy choose?\nA: ```python\nQ: not a card\nreturn action\n```"),
+    ).toEqual([
+      { front: "What does the policy choose?", back: "```python\nQ: not a card\nreturn action\n```" },
+    ]);
+  });
 });
