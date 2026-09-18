@@ -13,6 +13,11 @@ const items: { name: string; description: string; href: string }[] = [
     href: "/tools/orbit",
   },
   {
+    name: "Time Zones",
+    description: "Compare Utah, Croatia, and San Francisco without doing timezone math.",
+    href: "/tools/time-zones",
+  },
+  {
     name: "TTFB Tool",
     description:
       "Measure saved sites from a Daytona sandbox and track TTFB over time.",
