@@ -1,14 +1,14 @@
 ---
 title: What Would a Quantum Sandbox Look Like?
 slug: quantum-sandbox
-excerpt: Kai Sandberg and I imagine a data center where QPUs sit next to GPUs. A simple foundation in quantum computing, and what developers could do with quantum compute they request through an API.
+excerpt: What happens when quantum computers become infrastructure? Kai Sandberg and I explore the idea of a quantum sandbox.
 publishedAt: 2026-09-16
 tags: [Quantum Computing, Infrastructure, Sandboxes]
 ---
 
 After meeting with my friend [Kai Sandberg](https://www.linkedin.com/in/kai-sandberg-837b112a0/), we quickly started talking about different applications of technology.
 
-Kai comes from a quantum computing background. He won an MIT quantum hackathon and later conducted quantum research at the University of Maryland for the NSA. My background is in machine learning research at Daytona, where I spend much of my time working on evaluations, benchmarking, sandboxes, and elastic compute.
+Kai comes from a quantum computing background. He won an MIT quantum hackathon and later conducted quantum research at the University of Maryland. My background is in machine learning research at Daytona, where I spend much of my time working on evaluations, benchmarking, sandboxes, and elastic compute.
 
 Naturally, our backgrounds collided and got us wondering…
 
