@@ -20,9 +20,46 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return { title: "Post Not Found" };
+
+  const url = `/blog/${post.slug}`;
+  const image =
+    post.slug === "quantum-sandbox"
+      ? "/blog/quantum-sandbox/home-quantum-computer.png"
+      : undefined;
+
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "article",
+      url,
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: post.publishedAt,
+      authors: ["Daniel Graviet"],
+      tags: post.tags,
+      ...(image
+        ? {
+            images: [
+              {
+                url: image,
+                width: 1672,
+                height: 941,
+                alt: post.title,
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      ...(image ? { images: [image] } : {}),
+    },
   };
 }
 

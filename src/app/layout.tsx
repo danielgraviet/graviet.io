@@ -19,6 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.graviet.io"),
   title: {
     default: "Daniel Graviet",
     template: "%s | Daniel Graviet",
