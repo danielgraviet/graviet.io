@@ -8,7 +8,11 @@ tags: [Quantum Computing, Infrastructure, Sandboxes]
 
 After meeting with my friend [Kai Sandberg](https://www.linkedin.com/in/kai-sandberg-837b112a0/), we quickly started talking about different applications of technology.
 
-Kai comes from a quantum computing background. He won an MIT quantum hackathon and later conducted quantum research at the University of Maryland. My background is in machine learning research at Daytona, where I spend much of my time working on evaluations, benchmarking, sandboxes, and elastic compute.
+Kai comes from a quantum computing background. He won an MIT quantum hackathon and later conducted quantum research at the University of Maryland.
+
+![Kai and team at the MIT quantum hackathon](/blog/quantum-sandbox/kai-mit-hack.jpeg)
+
+My background is in machine learning research at Daytona, where I spend much of my time working on evaluations, benchmarking, sandboxes, and elastic compute.
 
 Naturally, our backgrounds collided and got us wondering…
 
@@ -24,7 +28,9 @@ That led to a few more questions:
 
 It is fun to imagine a data center in 2036 where Quantum Processing Units, or QPUs, sit alongside CPUs and GPUs. Some may live inside enormous cryogenic systems, cooled to temperatures close to absolute zero. Developers do not need to understand the physical machine underneath. They request quantum compute through an API, run a workload, collect the result, and release the resources.
 
-I was surprised to find out that parts of this future already exist. Amazon Braket currently lets developers submit quantum tasks to QPUs through an AWS service and software development kit. Those tasks are queued, executed on quantum hardware, and their results are returned through normal cloud infra.
+I was surprised to find out that parts of this future already exist. [Amazon Braket](https://aws.amazon.com/braket/) currently lets developers submit quantum tasks to QPUs through an AWS service and software development kit. Those tasks are queued, executed on quantum hardware, and their results are returned through normal cloud infra.
+
+![Amazon Braket dataflow: user submits quantum tasks through notebook to Braket service, which routes to simulators or QPUs, with results stored in S3](/blog/quantum-sandbox/braket-dataflow.webp)
 
 What does not exist in the same mature form is the infrastructure layer we take for granted around classical compute.
 
