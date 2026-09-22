@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Star } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
 
 export const metadata: Metadata = {
   title: "Tools",
 };
 
-const items: { name: string; description: string; href: string }[] = [
+const items: { name: string; description: string; href: string; featured?: boolean }[] = [
+  {
+    name: "Learning",
+    description:
+      "AI Runtime Systems curriculum, custom subjects, and spaced-repetition quizzes.",
+    href: "/tools/learn",
+    featured: true,
+  },
   {
     name: "Find a time",
     description: "Create a scheduling poll and see when everyone is available.",
@@ -27,12 +35,6 @@ const items: { name: string; description: string; href: string }[] = [
     description:
       "Measure saved sites from a Daytona sandbox and track TTFB over time.",
     href: "/tools/ttfb",
-  },
-  {
-    name: "Learn",
-    description:
-      "AI Runtime Systems curriculum, custom subjects, and spaced-repetition quizzes.",
-    href: "/tools/learn",
   },
   {
     name: "Work Log",
@@ -68,8 +70,9 @@ export default function ToolsPage() {
           >
             <Link
               href={item.href}
-              className="shrink-0 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary"
+              className={`inline-flex shrink-0 items-center gap-2 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary ${item.featured ? "text-foreground" : ""}`}
             >
+              {item.featured && <Star aria-label="Featured" size={16} className="fill-yellow-400 text-yellow-500" />}
               {item.name}
             </Link>
             <span className="text-sm leading-relaxed text-text-secondary">
