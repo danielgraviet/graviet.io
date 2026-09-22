@@ -8,6 +8,11 @@ export const metadata: Metadata = {
 
 const items: { name: string; description: string; href: string }[] = [
   {
+    name: "Find a time",
+    description: "Create a scheduling poll and see when everyone is available.",
+    href: "/tools/meet",
+  },
+  {
     name: "Orbit",
     description: "Keep important friendships close with a simple relationship pulse.",
     href: "/tools/orbit",

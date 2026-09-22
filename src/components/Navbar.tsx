@@ -15,6 +15,7 @@ function isActive(pathname: string, href: string) {
   if (href === "/tools") {
     return pathname.startsWith("/tools") || pathname.startsWith("/interview-tool");
   }
+  if (href === "/meet") return pathname.startsWith("/meet");
   return false;
 }
 
