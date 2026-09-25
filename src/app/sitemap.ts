@@ -25,6 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    {
+      url: `${BASE_URL}/browser-benchmark`,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
   ];
 
   const postEntries: MetadataRoute.Sitemap = posts.map((post) => ({

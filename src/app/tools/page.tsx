@@ -47,6 +47,11 @@ const items: { name: string; description: string; href: string; featured?: boole
     href: "/tools/budget",
   },
   {
+    name: "Browser Benchmark",
+    description: "Repeatable page load, interaction, tab, and video tests for comparing browsers.",
+    href: "/browser-benchmark",
+  },
+  {
     name: "Interview Timer",
     description: "Timed interview practice with prompts, phases, and notes.",
     href: "/interview-tool",
