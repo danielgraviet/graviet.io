@@ -57,6 +57,11 @@ const BROWSERS = {
     matches: (command) => command.startsWith("/Applications/Google Chrome.app/"),
     profileDirs: ["Library/Application Support/Google/Chrome", "Library/Caches/Google/Chrome"],
     selectTab: (n) => `tell application "Google Chrome" to set active tab index of front window to ${n}`,
+    openTab: (url) => `tell application "Google Chrome" to make new tab at end of tabs of front window with properties {URL:"${url}"}`,
+    setActiveUrl: (url) => `tell application "Google Chrome" to set URL of active tab of front window to "${url}"`,
+    windowState: `tell application "Google Chrome"\nset tabTotal to 0\nrepeat with browserWindow in windows\nset tabTotal to tabTotal + (count of tabs of browserWindow)\nend repeat\nreturn ((count of windows) as text) & ":" & (tabTotal as text)\nend tell`,
+    resetWindow: `tell application "Google Chrome"\nrepeat while (count of windows) > 1\nclose window (count of windows)\ndelay 0.2\nend repeat\nif (count of windows) = 0 then make new window\nrepeat while (count of tabs of front window) > 1\nclose tab 2 of front window\ndelay 0.2\nend repeat\nend tell`,
+    closeWindows: `tell application "Google Chrome"\nrepeat while (count of windows) > 0\nclose window 1\nend repeat\nquit\nend tell`,
   },
   brave: {
     name: "Brave Browser",
@@ -65,6 +70,11 @@ const BROWSERS = {
     matches: (command) => command.startsWith("/Applications/Brave Browser.app/"),
     profileDirs: ["Library/Application Support/BraveSoftware/Brave-Browser", "Library/Caches/BraveSoftware/Brave-Browser"],
     selectTab: (n) => `tell application "Brave Browser" to set active tab index of front window to ${n}`,
+    openTab: (url) => `tell application "Brave Browser" to make new tab at end of tabs of front window with properties {URL:"${url}"}`,
+    setActiveUrl: (url) => `tell application "Brave Browser" to set URL of active tab of front window to "${url}"`,
+    windowState: `tell application "Brave Browser"\nset tabTotal to 0\nrepeat with browserWindow in windows\nset tabTotal to tabTotal + (count of tabs of browserWindow)\nend repeat\nreturn ((count of windows) as text) & ":" & (tabTotal as text)\nend tell`,
+    resetWindow: `tell application "Brave Browser"\nrepeat while (count of windows) > 1\nclose window (count of windows)\ndelay 0.2\nend repeat\nif (count of windows) = 0 then make new window\nrepeat while (count of tabs of front window) > 1\nclose tab 2 of front window\ndelay 0.2\nend repeat\nend tell`,
+    closeWindows: `tell application "Brave Browser"\nrepeat while (count of windows) > 0\nclose window 1\nend repeat\nquit\nend tell`,
   },
 };
 
@@ -208,8 +218,27 @@ async function duMb(path) {
 // Browser control
 
 async function quitBrowser(browser) {
-  await text("osascript", ["-e", `tell application id "${browser.bundleId}" to quit`]);
+  // Close windows one by one so browsers configured to restore their previous
+  // session don't bring old workload tabs into the next run. Use a strict call:
+  // silently ignoring an AppleScript error can make each batch accumulate tabs.
+  try {
+    if (browser.closeWindows) await run("osascript", ["-e", browser.closeWindows]);
+    else {
+      await run("osascript", ["-e", `tell application id "${browser.bundleId}" to close window 1`]).catch(() => {});
+      await run("osascript", ["-e", `tell application id "${browser.bundleId}" to quit`]);
+    }
+  } catch {
+    await text("osascript", ["-e", `tell application id "${browser.bundleId}" to quit`]);
+  }
   for (let waited = 0; waited < 30; waited++) {
+    if (!(await browserProcesses(browser)).length) return true;
+    await sleep(1);
+  }
+  // Some Chromium builds remain alive after AppleScript quit (for example,
+  // background apps). Kill every process in the bundle, then verify it exited.
+  const processes = await browserProcesses(browser);
+  for (const { pid } of processes) await text("kill", ["-9", String(pid)]);
+  for (let waited = 0; waited < 10; waited++) {
     if (!(await browserProcesses(browser)).length) return true;
     await sleep(1);
   }
@@ -261,7 +290,20 @@ async function startLocalServer(target) {
   async function proxy(request, response) {
     const headers = {};
     for (const name of FORWARD_HEADERS) if (request.headers[name]) headers[name] = request.headers[name];
-    const upstream = await fetch(target + request.url, { headers, redirect: "manual" });
+    // A brief upstream/network hiccup should not leave a workload tab displaying
+    // a proxy error. Retry failed fetches before returning a response to the page.
+    let upstream;
+    let lastError;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        upstream = await fetch(target + request.url, { headers, redirect: "manual" });
+        break;
+      } catch (error) {
+        lastError = error;
+        if (attempt < 2) await sleep(500 * (attempt + 1));
+      }
+    }
+    if (!upstream) throw lastError ?? new Error("Upstream fetch failed");
     const outgoing = {};
     upstream.headers.forEach((value, key) => {
       if (HOP_HEADERS.has(key)) return;
@@ -391,9 +433,7 @@ async function sampleWindow(context, recorder, scenario, runNumber, seconds) {
 
 async function ensureQuit(context) {
   if (await quitBrowser(context.browser)) return;
-  console.log(`    ${context.browser.name} did not quit within 30 s; force-quitting.`);
-  for (const { pid } of await browserProcesses(context.browser)) await text("kill", ["-9", String(pid)]);
-  await sleep(2);
+  throw new Error(`${context.browser.name} is still running after quit and force-quit; refusing to open another workload batch`);
 }
 
 async function scenarioStorage(context, recorder) {
@@ -470,12 +510,43 @@ function workloadUrls(context, count) {
 async function launchWithTabs(context, urls) {
   await ensureQuit(context);
   await sleep(3);
-  // Launch straight into the first URL so there's no extra new-tab page in the count.
-  await openUrl(context.browser, urls[0]);
-  await sleep(5);
+  // Launch without a URL first: `open -a app URL` can create both the browser's
+  // startup window and a second URL window. Navigate the single startup tab,
+  // then add the remaining workload tabs through Apple Events.
+  if (context.browser.setActiveUrl) {
+    await run("open", ["-a", context.browser.app]);
+    await sleep(3);
+    await activate(context.browser);
+    // Chromium may restore the last session even after a clean quit. Replace
+    // that restored window set with one fresh window before adding any workload.
+    if (context.browser.resetWindow) await run("osascript", ["-e", context.browser.resetWindow]);
+  } else {
+    await openUrl(context.browser, urls[0]);
+  }
+  await sleep(context.browser.setActiveUrl ? 2 : 5);
+  if (context.browser.windowState) {
+    const { stdout } = await run("osascript", ["-e", context.browser.windowState]);
+    const [windows, tabs] = stdout.trim().split(":").map(Number);
+    if (windows !== 1 || tabs !== 1) {
+      throw new Error(`Could not reset the browser to one clean window and tab; found ${windows} windows and ${tabs} tabs`);
+    }
+  }
+  if (context.browser.setActiveUrl) {
+    await run("osascript", ["-e", context.browser.setActiveUrl(urls[0])]);
+    await sleep(3);
+  }
   for (const url of urls.slice(1)) {
-    await openUrl(context.browser, url);
+    if (context.browser.openTab) await run("osascript", ["-e", context.browser.openTab(url)]);
+    else await openUrl(context.browser, url);
     await sleep(0.5);
+  }
+  if (context.browser.windowState) {
+    const { stdout } = await run("osascript", ["-e", context.browser.windowState]);
+    const [windows, tabs] = stdout.trim().split(":").map(Number);
+    if (windows !== 1 || tabs !== urls.length) {
+      throw new Error(`Expected one window with ${urls.length} workload tabs, found ${windows} windows and ${tabs} tabs; refusing to sample this batch`);
+    }
+    console.log(`    verified one window with ${tabs} tabs`);
   }
 }
 
@@ -590,7 +661,9 @@ async function measureBrowser(key, options, scenarios, server) {
     }
   }
   // Storage alone never launches the browser, so leave it running in that case.
-  if (scenarios.some((scenario) => scenario !== "storage")) await quitBrowser(browser);
+  if (scenarios.some((scenario) => scenario !== "storage") && !(await quitBrowser(browser))) {
+    console.log(`    ⚠ ${browser.name} may still be running after the final cleanup.`);
+  }
   return { name: `${browser.name} ${env.version}`, summary: context.summary };
 }
 

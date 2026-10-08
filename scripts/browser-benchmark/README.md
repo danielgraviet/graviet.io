@@ -28,6 +28,8 @@ With the defaults (5 runs), expect about 45 minutes per browser. The script prin
 
 The script runs a small local server on `127.0.0.1`. It proxies every request to `--base-url`, so the benchmark pages load from the script's own address. Pages opened with `?report=1` POST their results to `/__bench/report` on that same address. Nothing is sent anywhere else, and visitors to the real site never report. The proxy adds a small, equal delay for every browser, so compare page-load numbers between browsers, not against the live site.
 
+Before each measured batch, the script closes browser windows one by one and waits for the browser processes to exit (force-quitting and checking again if needed). Chrome and Brave can restore the last session at launch, so the script replaces any restored windows with one clean window, then creates workload tabs through AppleScript. It checks the window and tab counts before sampling and skips the batch if they do not match.
+
 ## Scenarios
 
 | Scenario | What the script does | Whole-browser metrics (`observations.csv`) | Page-level metrics (`page-metrics.csv`) |
