@@ -27,6 +27,9 @@ const PREPARE_DATE = process.argv.find((arg) => arg.startsWith("--prepare-date="
 const REQUESTED_DATE = process.argv.find((arg) => arg.startsWith("--date="))?.split("=")[1];
 const CONFIRM_DATE = process.argv.find((arg) => arg.startsWith("--confirm-date="))?.split("=")[1];
 
+const isVercel = Boolean(process.env.VERCEL);
+let webhookActiveLogged = false;
+
 function loadEnvLocal() {
   const values = new Map();
   for (const filename of [".env", ".env.local"]) {
@@ -165,44 +168,71 @@ function repoIdentity(repo) {
     : `path:${repo}`;
 }
 
-function githubCommits(date) {
+async function githubCommits(date) {
   if (process.env.WORK_LOG_GITHUB_ENABLED === "false") return [];
   const author = process.env.WORK_LOG_GITHUB_AUTHOR || "danielgraviet";
   // Search a wider UTC range, then apply the configured local timezone below.
   const from = shiftDate(date, -1);
   const through = shiftDate(date, 1);
   const query = `author:${author} committer-date:${from}..${through}`;
-  const jq = '.items[] | {sha: .sha, project: .repository.full_name, committedAt: .commit.committer.date, subject: (.commit.message | split("\\n")[0])}';
-  const result = spawnSync("gh", [
-    "api", "--paginate", `search/commits?q=${encodeURIComponent(query)}&per_page=100`,
-    "--jq", jq,
-  ], { encoding: "utf8", maxBuffer: 20 * 1024 * 1024 });
-  if (result.status !== 0) {
-    throw new Error(`GitHub commit search failed. Re-authenticate with “gh auth login” and retry. ${result.stderr?.trim() || ""}`);
+  const token = process.env.WORK_LOG_GITHUB_TOKEN?.trim();
+  let items = [];
+  if (token || isVercel) {
+    if (isVercel && !token) throw new Error("WORK_LOG_GITHUB_TOKEN is required in Vercel to search your GitHub projects.");
+    for (let page = 1; page <= 10; page += 1) {
+      const response = await fetch(`https://api.github.com/search/commits?q=${encodeURIComponent(query)}&per_page=100&page=${page}`, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        signal: AbortSignal.timeout(20_000),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(`GitHub commit search failed (${response.status}): ${payload.message || "unknown error"}`);
+      items.push(...(payload.items || []));
+      if (items.length >= Number(payload.total_count || 0) || (payload.items || []).length < 100) break;
+    }
+  } else {
+    const jq = '.items[] | {sha: .sha, project: .repository.full_name, committedAt: .commit.committer.date, subject: (.commit.message | split("\\n")[0])}';
+    const result = spawnSync("gh", [
+      "api", "--paginate", `search/commits?q=${encodeURIComponent(query)}&per_page=100`,
+      "--jq", jq,
+    ], { encoding: "utf8", maxBuffer: 20 * 1024 * 1024 });
+    if (result.status !== 0) {
+      throw new Error(`GitHub commit search failed. Re-authenticate with “gh auth login” or set WORK_LOG_GITHUB_TOKEN. ${result.stderr?.trim() || ""}`);
+    }
+    items = result.stdout.split(/\r?\n/).filter(Boolean).flatMap((line) => {
+      try { return [JSON.parse(line)]; } catch { return []; }
+    });
   }
   const commits = [];
-  for (const line of result.stdout.split(/\r?\n/)) {
-    if (!line.trim()) continue;
+  for (const commit of items) {
     try {
-      const commit = JSON.parse(line);
-      if (!commit.sha || !commit.project || !commit.committedAt) continue;
-      if (dateInZone(new Date(commit.committedAt)) !== date) continue;
+      const normalized = commit.repository
+        ? {
+          sha: commit.sha,
+          project: commit.repository.full_name,
+          committedAt: commit.commit?.committer?.date,
+          subject: String(commit.commit?.message || "").split("\n")[0],
+        }
+        : commit;
+      if (!normalized.sha || !normalized.project || !normalized.committedAt) continue;
+      if (dateInZone(new Date(normalized.committedAt)) !== date) continue;
       commits.push({
-        project: commit.project,
-        identity: `remote:https://github.com/${commit.project}`.toLowerCase(),
-        sha: commit.sha,
-        subject: String(commit.subject || "").trim(),
+        project: normalized.project,
+        identity: `remote:https://github.com/${normalized.project}`.toLowerCase(),
+        sha: normalized.sha,
+        subject: String(normalized.subject || "").trim(),
         files: [],
       });
-    } catch {
-      // Ignore non-JSON output lines from gh.
-    }
+    } catch { /* Ignore malformed commit results. */ }
   }
   return commits;
 }
 
-function gatherActivity(date) {
-  const roots = (process.env.WORK_LOG_REPO_ROOTS || "").split(",").map((path) => path.trim()).filter(Boolean);
+async function gatherActivity(date) {
+  const roots = (isVercel ? [] : (process.env.WORK_LOG_REPO_ROOTS || "").split(",")).map((path) => path.trim()).filter(Boolean);
   const repos = [...new Set(roots.flatMap(findRepos))];
   const grouped = new Map();
   const addCommit = (identity, project, commit) => {
@@ -219,7 +249,7 @@ function gatherActivity(date) {
       files: [...new Set(commit.files || [])].slice(0, 30),
     });
   };
-  for (const commit of githubCommits(date)) {
+  for (const commit of await githubCommits(date)) {
     addCommit(commit.identity, commit.project, commit);
   }
   for (const repo of repos) {
@@ -351,7 +381,7 @@ async function reviseWithOpenRouter(draft, instruction, knownVocabulary) {
   };
 }
 
-async function ensureSchema(db) {
+export async function ensureSchema(db) {
   await db`
     CREATE TABLE IF NOT EXISTS work_log_entries (
       id serial PRIMARY KEY,
@@ -382,6 +412,7 @@ async function ensureSchema(db) {
   await db`CREATE TABLE IF NOT EXISTS work_log_automation_state (key text PRIMARY KEY, value text NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`;
   await db`ALTER TABLE work_log_entries ADD COLUMN IF NOT EXISTS source_draft_id text`;
   await db`CREATE UNIQUE INDEX IF NOT EXISTS work_log_entries_source_draft_id_idx ON work_log_entries (source_draft_id) WHERE source_draft_id IS NOT NULL`;
+  await db`CREATE TABLE IF NOT EXISTS work_log_automation_webhook_updates (update_id bigint PRIMARY KEY, processed_at timestamptz NOT NULL DEFAULT now())`;
 }
 
 async function telegram(method, body) {
@@ -395,6 +426,15 @@ async function telegram(method, body) {
   const payload = await response.json();
   if (!response.ok || !payload.ok) throw new Error(payload.description || `Telegram ${method} failed.`);
   return payload.result;
+}
+
+export async function registerTelegramWebhook(url) {
+  await telegram("setWebhook", {
+    url,
+    secret_token: requireEnv("WORK_LOG_TELEGRAM_WEBHOOK_SECRET"),
+    allowed_updates: ["message", "callback_query"],
+    drop_pending_updates: false,
+  });
 }
 
 function draftMessage(draft) {
@@ -478,7 +518,7 @@ async function sendUndeliveredDrafts(db) {
   }
 }
 
-async function ensureAndRunDaily(db) {
+export async function ensureAndRunDaily(db) {
   const runHour = Number(process.env.WORK_LOG_AUTOMATION_HOUR || "18");
   if (!FORCE && localHour() < runHour) return;
 
@@ -487,7 +527,7 @@ async function ensureAndRunDaily(db) {
   const state = await db`SELECT value FROM work_log_automation_state WHERE key = 'last_scanned_on'`;
   let nextDate = state.length ? shiftDate(state[0].value, 1) : yesterday;
   while (nextDate <= yesterday) {
-    const activity = gatherActivity(nextDate);
+    const activity = await gatherActivity(nextDate);
     if (activity.length) {
       await prepareDraft(db, nextDate, activity);
     } else {
@@ -563,7 +603,7 @@ async function answerCallback(callbackId, text) {
   }
 }
 
-async function processUpdate(db, update) {
+export async function processUpdate(db, update) {
   const chatId = String(requireEnv("WORK_LOG_TELEGRAM_CHAT_ID"));
   const userId = String(requireEnv("WORK_LOG_TELEGRAM_USER_ID"));
   if (update.message) {
@@ -627,6 +667,13 @@ async function processUpdate(db, update) {
 }
 
 async function pollTelegram(db) {
+  const webhook = await telegram("getWebhookInfo", {});
+  if (webhook.url) {
+    if (!webhookActiveLogged) console.log("Telegram webhook is active; Vercel will handle bot updates.");
+    webhookActiveLogged = true;
+    return true;
+  }
+  webhookActiveLogged = false;
   const state = await db`SELECT value FROM work_log_automation_state WHERE key = 'telegram_update_offset'`;
   const offset = state.length ? Number(state[0].value) : undefined;
   const updates = await telegram("getUpdates", {
@@ -638,13 +685,14 @@ async function pollTelegram(db) {
     await processUpdate(db, update);
     await db`INSERT INTO work_log_automation_state (key, value) VALUES ('telegram_update_offset', ${String(update.update_id + 1)}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`;
   }
+  return false;
 }
 
 async function main() {
   loadEnvLocal();
   if (DRY_RUN) {
     const date = REQUESTED_DATE || shiftDate(dateInZone(), -1);
-    const activity = gatherActivity(date);
+    const activity = await gatherActivity(date);
     if (!activity.length) {
       console.log(`No Git activity found for ${date}.`);
       return;
@@ -674,7 +722,7 @@ async function main() {
       console.log(`${PREPARE_DATE} is a weekend; no weekday draft was prepared.`);
       return;
     }
-    const activity = gatherActivity(PREPARE_DATE);
+    const activity = await gatherActivity(PREPARE_DATE);
     if (!activity.length) {
       await sendChat(`No Git activity found for ${PREPARE_DATE}. No draft was created.`);
       console.log(`No Git activity found for ${PREPARE_DATE}.`);
@@ -717,8 +765,8 @@ async function main() {
   }
   do {
     try {
-      await pollTelegram(db);
-      await ensureAndRunDaily(db);
+      const webhookActive = await pollTelegram(db);
+      if (!webhookActive) await ensureAndRunDaily(db);
     } catch (error) {
       console.error("Work-log automation cycle failed:", error);
       if (!WATCH) throw error;
@@ -730,7 +778,19 @@ async function main() {
   } while (WATCH);
 }
 
-main().catch((error) => {
-  console.error("Work-log automation failed:", error);
-  process.exitCode = 1;
-});
+export async function runScheduledAutomation() {
+  const db = sqlClient();
+  await ensureSchema(db);
+  await ensureAndRunDaily(db);
+}
+
+export function automationDatabase() {
+  return sqlClient();
+}
+
+if (basename(process.argv[1] || "") === "work-log-automation.mjs") {
+  main().catch((error) => {
+    console.error("Work-log automation failed:", error);
+    process.exitCode = 1;
+  });
+}

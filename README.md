@@ -66,26 +66,30 @@ The private work log suggests tags through Groq using only tags that already exi
 
 ## Daily Work Log automation
 
-The automation in `scripts/work-log-automation.mjs` searches GitHub for commits authored by `WORK_LOG_GITHUB_AUTHOR`, across repositories visible to your authenticated GitHub CLI account. This catches work across machines and projects without scanning one assumed folder. Authenticate with `gh auth login`. Optionally set `WORK_LOG_REPO_ROOTS` to local folders to include unpushed commits too; the collector deduplicates matching commit SHAs. Set `WORK_LOG_GITHUB_ENABLED=false` only for local-only collection.
+The production automation runs on Vercel; you do not need to keep a terminal or your Mac running. `vercel.json` schedules `/api/work-log/cron` once each day. That function searches GitHub, formats the prior day's activity with OpenRouter, and sends a draft to Telegram. The cron also registers `/api/work-log/telegram` as the bot webhook, so plain-text edits and approval taps are handled as soon as Telegram sends them.
 
-The collector sends commit subjects and local changed file paths (never source diffs) to the configured OpenRouter model for formatting. It sends the resulting draft to your private Telegram chat with **Approve**, **Edit**, and **Skip** buttons. Only approval inserts an entry into the existing Work Log. Drafts and Telegram polling state are stored in Neon; approvals are idempotent. The script runs locally and does not depend on `npm run dev`.
+Add these variables to Vercel for Production (and Preview only if you want automation on preview deployments):
 
-Configure the daily automation variables in `.env.local` (see `.env.local.example`). The example uses OpenRouter's `~deepseek/deepseek-v4-flash-latest` alias and sorts providers by throughput for quicker responses. OpenRouter currently lists the Flash model at a fraction of a dollar per million tokens; its exact price depends on the current model version and provider. [Model details](https://openrouter.ai/~deepseek/deepseek-v4-flash-latest), [provider routing](https://openrouter.ai/docs/guides/routing/model-variants/nitro). Create a Telegram bot, start a private chat with it, and set the bot token plus your chat and Telegram user IDs. The bot must use polling; do not configure a Telegram webhook for the same bot.
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon Postgres connection string |
+| `OPENROUTER_API_KEY` | Formats the work-log draft |
+| `OPENROUTER_MODEL` | Defaults to `~deepseek/deepseek-v4-flash-latest` |
+| `WORK_LOG_TELEGRAM_BOT_TOKEN` | Telegram bot token |
+| `WORK_LOG_TELEGRAM_CHAT_ID` | Your private Telegram chat ID |
+| `WORK_LOG_TELEGRAM_USER_ID` | Your Telegram user ID; rejects other senders |
+| `WORK_LOG_TELEGRAM_WEBHOOK_SECRET` | Random secret used to verify Telegram webhook requests |
+| `WORK_LOG_GITHUB_TOKEN` | GitHub token with read access to the repositories to include |
+| `WORK_LOG_GITHUB_AUTHOR` | GitHub username to search; defaults to `danielgraviet` |
+| `WORK_LOG_TIME_ZONE` | Defaults to `America/Denver` |
+| `WORK_LOG_AUTOMATION_HOUR` | Local earliest run hour; defaults to `18` |
+| `CRON_SECRET` | Random secret Vercel sends to protect the cron route |
 
-First preview yesterday's activity and formatting without sending a message or creating a draft:
+Set `WORK_LOG_GITHUB_ENABLED=false` only to disable GitHub collection. `WORK_LOG_REPO_ROOTS` is local-only: Vercel cannot read your Mac's folders or unpushed commits, so production uses pushed GitHub history. Give the GitHub token read-only access to the repositories you want included.
 
-```bash
-npm run work-log:automation -- --dry-run
-```
+The cron schedule is `01:00 UTC`, which falls after 18:00 in Denver across daylight-saving changes. Vercel Hobby supports one cron run per day; the Telegram webhook provides immediate message and button handling between daily runs. Vercel Cron runs only on Production deployments. After the first scheduled run, confirm the job in Vercel under **Settings → Cron Jobs** and check its function logs if it fails.
 
-After confirming the preview and Telegram setup, run the script every five minutes with macOS cron. Replace both paths with your local paths; find the Node path with `which node`:
-
-```cron
-PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-*/5 * * * * cd /path/to/graviet.io && /absolute/path/to/node scripts/work-log-automation.mjs >> /tmp/work-log-automation.log 2>&1
-```
-
-The worker polls Telegram on each run and creates daily drafts after `WORK_LOG_AUTOMATION_HOUR` in `WORK_LOG_TIME_ZONE` (18:00 by default). If the Mac is asleep, it catches up dates once it runs again. To generate the previous day's draft immediately for a live end-to-end check, run `npm run work-log:automation -- --force`.
+The local `npm run dev` poller remains available for development. Do not run local polling against the bot after the production webhook has been registered; Telegram does not allow polling and a webhook for the same bot at the same time.
 
 ## Essay Idea Pipeline
 
