@@ -45,6 +45,12 @@ export default function Navbar() {
             </Link>
           );
         })}
+        <Link
+          href="/gt"
+          className={`w-fit transition-colors hover:text-foreground ${pathname.startsWith("/gt") ? "text-foreground" : ""}`}
+        >
+          GT
+        </Link>
       </nav>
       <div className="mt-6 flex items-center gap-3 text-foreground md:mt-8">
         <a

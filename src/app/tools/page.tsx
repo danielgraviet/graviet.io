@@ -7,7 +7,18 @@ export const metadata: Metadata = {
   title: "Tools",
 };
 
-const items: { name: string; description: string; href: string; featured?: boolean }[] = [
+const items: {
+  name: string;
+  description: string;
+  href: string;
+  featured?: boolean;
+}[] = [
+  {
+    name: "GT Inquiries",
+    description:
+      "Review business requests submitted through the Graviet Technologies intake chat.",
+    href: "/tools/gt-intake",
+  },
   {
     name: "Learning",
     description:
@@ -22,12 +33,14 @@ const items: { name: string; description: string; href: string; featured?: boole
   },
   {
     name: "Orbit",
-    description: "Keep important friendships close with a simple relationship pulse.",
+    description:
+      "Keep important friendships close with a simple relationship pulse.",
     href: "/tools/orbit",
   },
   {
     name: "Time Zones",
-    description: "Compare Utah, Croatia, and San Francisco without doing timezone math.",
+    description:
+      "Compare Utah, Croatia, and San Francisco without doing timezone math.",
     href: "/tools/time-zones",
   },
   {
@@ -48,7 +61,8 @@ const items: { name: string; description: string; href: string; featured?: boole
   },
   {
     name: "Browser Benchmark",
-    description: "Repeatable page load, interaction, tab, and video tests for comparing browsers.",
+    description:
+      "Repeatable page load, interaction, tab, and video tests for comparing browsers.",
     href: "/browser-benchmark",
   },
   {
@@ -77,7 +91,13 @@ export default function ToolsPage() {
               href={item.href}
               className={`inline-flex shrink-0 items-center gap-2 text-base font-semibold underline decoration-border underline-offset-4 transition-colors hover:text-text-secondary ${item.featured ? "text-foreground" : ""}`}
             >
-              {item.featured && <Star aria-label="Featured" size={16} className="fill-yellow-400 text-yellow-500" />}
+              {item.featured && (
+                <Star
+                  aria-label="Featured"
+                  size={16}
+                  className="fill-yellow-400 text-yellow-500"
+                />
+              )}
               {item.name}
             </Link>
             <span className="text-sm leading-relaxed text-text-secondary">
