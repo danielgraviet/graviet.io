@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 export default function SiteFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/gt")) {
+  if (pathname.startsWith("/gt") || pathname.startsWith("/demo/")) {
     return <main className="min-h-screen">{children}</main>;
   }
 

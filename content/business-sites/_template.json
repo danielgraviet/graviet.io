@@ -1,0 +1,20 @@
+{
+  "slug": "example-business",
+  "name": "Business Name",
+  "category": "Local business category",
+  "headline": "A concise headline about what the business offers.",
+  "intro": "A short, factual introduction based on information the business has publicly shared.",
+  "phone": "+1 801 555 0100",
+  "email": "hello@example.com",
+  "address": "Street address, City, State ZIP",
+  "hours": ["Monday–Friday · 9am–5pm", "Saturday · 10am–2pm", "Sunday · Closed"],
+  "services": [
+    { "name": "Primary service", "description": "A brief description confirmed by the business profile." },
+    { "name": "Another service", "description": "A second service offered by the business." }
+  ],
+  "highlights": ["Locally owned", "Serving the neighborhood", "Call for availability"],
+  "heroImage": "/business-sites/example-business/hero.jpg",
+  "accentColor": "#176b58",
+  "googleMapsUrl": "https://maps.google.com/?q=Business+Name",
+  "sourceUrl": "Google Business Profile URL used to verify public details"
+}

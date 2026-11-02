@@ -1,0 +1,26 @@
+{
+  "slug": "pink-axolotl",
+  "name": "Pink Axolotl",
+  "category": "Coffee shop · Orem, Utah",
+  "headline": "A neighborhood coffee stop in Orem.",
+  "intro": "Find Pink Axolotl at 163 400 N in Orem, Utah. Stop by for coffee and café drinks.",
+  "address": "163 400 N, Orem, UT 84057",
+  "hours": [
+    "Monday · 7:30 AM–5 PM",
+    "Tuesday · 7:30 AM–5 PM",
+    "Wednesday · 7:30 AM–5 PM",
+    "Thursday · 7:30 AM–5 PM",
+    "Friday · 7:30 AM–5 PM",
+    "Saturday · 9 AM–6 PM",
+    "Sunday · 9 AM–4 PM"
+  ],
+  "services": [
+    { "name": "Coffee and espresso drinks" },
+    { "name": "Matcha drinks" },
+    { "name": "Specialty lattes" }
+  ],
+  "highlights": ["Coffee shop in Orem", "Wheelchair-accessible parking", "Open daily"],
+  "accentColor": "#a52c68",
+  "googleMapsUrl": "https://www.google.com/maps/place/Pink+Axolotl/@40.3042459,-111.6996676,17z/",
+  "sourceUrl": "https://maps.app.goo.gl/wTCtDYrSyZyC5mg48"
+}
