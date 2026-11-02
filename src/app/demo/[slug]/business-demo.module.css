@@ -9,6 +9,10 @@
   font-family: var(--demo-body), Arial, sans-serif;
   overflow: hidden;
 }
+.expressiveTheme { --ink: #271620; --paper: #fff8ed; --body: #6a5860; }
+.editorialTheme { --ink: #222722; --paper: #f5f1e8; --body: #5c6158; --pink: var(--demo-accent, #995542); --demo-display: Georgia, "Times New Roman", serif; }
+.earthyTheme { --ink: #2e281f; --paper: #f6f1e7; --body: #6b6255; --pink: var(--demo-accent, #617a55); --demo-display: "Trebuchet MS", Arial, sans-serif; }
+.technicalTheme { --ink: #17272b; --paper: #eef3f1; --body: #526165; --pink: var(--demo-accent, #087e83); --demo-display: "Arial Narrow", "Trebuchet MS", sans-serif; }
 .site a { color: inherit; text-decoration: none; }
 .site a:focus-visible { outline: 3px solid #5eac7c; outline-offset: 4px; }
 .previewNotice { min-height: 36px; padding: 8px 4vw; display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #fff4ea; background: #321a29; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
@@ -125,6 +129,10 @@
 .hoursCard ul { margin: 0; padding: 0; display: grid; gap: 8px; list-style: none; }
 .hoursCard li { padding-bottom: 7px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); color: var(--body); font-size: 10px; }
 .hoursCard > a { margin-top: 15px; display: inline-block; color: var(--pink); font-size: 11px; font-weight: 800; }
+.hoursCard > p { margin: 10px 0; color: var(--body); font-size: 11px; line-height: 1.5; }
+.hoursCard > p > a { color: var(--pink); font-weight: 700; }
+.placeDetailsSource { margin-top: 14px; padding-top: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; border-top: 1px solid var(--line); }
+.placeDetailsSource > a { color: var(--pink); font-size: 10px; font-weight: 700; }
 .footer { min-height: 64px; padding: 17px 5vw; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #806f77; font-size: 10px; }
 .footerMeta { display: flex; align-items: center; gap: 12px; }
 .footerMeta > span { color: #a48e98; }

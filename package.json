@@ -5,6 +5,11 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "next build",
+    "business:search": "node scripts/business-sites.mjs search",
+    "business:inspect": "node scripts/business-sites.mjs inspect",
+    "business:scaffold": "node scripts/business-sites.mjs scaffold",
+    "business:asset": "node scripts/business-sites.mjs asset",
+    "business:validate": "node scripts/business-sites.mjs validate",
     "start": "next start",
     "lint": "eslint",
     "work-log:automation": "node scripts/work-log-automation.mjs",

@@ -44,7 +44,7 @@ export async function GET(
   }
 
   const fields = [
-    "id", "displayName", "rating", "userRatingCount", "googleMapsUri",
+    "id", "displayName", "formattedAddress", "nationalPhoneNumber", "regularOpeningHours.weekdayDescriptions", "rating", "userRatingCount", "googleMapsUri",
     "photos.name", "photos.widthPx", "photos.heightPx", "photos.authorAttributions",
     "photos.googleMapsUri", "photos.flagContentUri",
     "reviews.rating", "reviews.text", "reviews.authorAttribution",
@@ -78,6 +78,9 @@ export async function GET(
     rating: place.rating,
     reviewCount: place.userRatingCount,
     googleMapsUri: place.googleMapsUri,
+    formattedAddress: place.formattedAddress,
+    phoneNumber: place.nationalPhoneNumber,
+    weekdayHours: place.regularOpeningHours?.weekdayDescriptions,
     photos,
     reviews,
     reviewSortNote: "Reviews are ordered by Google’s relevance ranking.",

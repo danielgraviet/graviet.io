@@ -23,6 +23,9 @@ type PlacesContent = {
   rating?: number;
   reviewCount?: number;
   googleMapsUri?: string;
+  formattedAddress?: string;
+  phoneNumber?: string;
+  weekdayHours?: string[];
   photos?: PlacePhoto[];
   reviews?: PlaceReview[];
   reviewSortNote?: string;
@@ -177,11 +180,13 @@ export function GoogleReviewSection({
   );
 }
 
-export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl }: {
+export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl, eyebrow, heading }: {
   slug: string;
   businessName: string;
   fallbackMedia?: { src: string; alt: string; caption?: string; credit?: string; sourceUrl?: string }[];
   mapsUrl?: string;
+  eyebrow?: string;
+  heading?: string;
 }) {
   const data = useContext(PlacesContext);
   const photos = data?.photos || [];
@@ -190,7 +195,7 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
     if (!fallbackMedia.length) return null;
     return (
       <section className={styles.gallery} aria-label="Photos">
-        <div className={styles.galleryHeading}><p className={styles.eyebrow}>A LITTLE LOOK AROUND</p><h2>Bring your appetite.</h2></div>
+        <div className={styles.galleryHeading}><p className={styles.eyebrow}>{eyebrow || "A closer look"}</p><h2>{heading || `Get to know ${businessName}.`}</h2></div>
         <div className={styles.galleryGrid}>{fallbackMedia.map((item, index) => <figure className={`${styles.galleryItem} ${index === 0 ? styles.galleryLarge : ""}`} key={item.src}>
           <Image src={item.src} alt={item.alt} fill sizes={index === 0 ? "(max-width: 760px) 100vw, 60vw" : "(max-width: 760px) 48vw, 30vw"} className={styles.galleryPhoto} />
           {item.caption ? <figcaption><span>{item.caption}</span>{item.credit ? <small>Photo: {item.credit}</small> : null}</figcaption> : null}
@@ -201,7 +206,7 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
 
   return (
     <section className={styles.gallery} aria-label="Google Maps photos">
-      <div className={styles.galleryHeading}><p className={styles.eyebrow}>FROM THE PINK AXOLOTL COMMUNITY</p><h2>A peek inside.</h2><GoogleMapsLogo dark /></div>
+      <div className={styles.galleryHeading}><p className={styles.eyebrow}>{eyebrow || `FROM THE ${businessName.toUpperCase()} COMMUNITY`}</p><h2>{heading || "A look around."}</h2><GoogleMapsLogo dark /></div>
       <div className={styles.googlePhotoGrid}>
         {photos.slice(0, 3).map((photo, index) => {
           const author = photo.authorAttributions?.[0];
@@ -222,7 +227,27 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
           );
         })}
       </div>
-      <div className={styles.googlePhotoFooter}><GoogleMapsLogo dark /><a href={data?.googleMapsUri || mapsUrl || "#visit"} target="_blank" rel="noreferrer">Open Pink Axolotl on Google Maps ↗</a></div>
+      <div className={styles.googlePhotoFooter}><GoogleMapsLogo dark /><a href={data?.googleMapsUri || mapsUrl || "#visit"} target="_blank" rel="noreferrer">Open {businessName} on Google Maps ↗</a></div>
     </section>
   );
+}
+
+export function GooglePlaceContactDetails({ mapsUrl, fallbackAddress, fallbackHours }: {
+  mapsUrl?: string;
+  fallbackAddress?: string;
+  fallbackHours?: string[];
+}) {
+  const data = useContext(PlacesContext);
+  const address = data?.formattedAddress || fallbackAddress;
+  const hours = data?.weekdayHours || fallbackHours;
+  const phone = data?.phoneNumber;
+  const source = data?.googleMapsUri || mapsUrl;
+
+  return <div className={styles.hoursCard}>
+    <h3>Visit & contact</h3>
+    {address ? <p>{address}</p> : null}
+    {phone ? <p><a href={`tel:${phone.replace(/[^0-9+]/g, "")}`}>{phone}</a></p> : null}
+    {hours?.length ? <ul>{hours.map((hour) => <li key={hour}>{hour}</li>)}</ul> : null}
+    {source ? <div className={styles.placeDetailsSource}><GoogleMapsLogo dark /><a href={source} target="_blank" rel="noreferrer">Current details on Google Maps ↗</a></div> : null}
+  </div>;
 }

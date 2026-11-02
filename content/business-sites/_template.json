@@ -2,19 +2,28 @@
   "slug": "example-business",
   "name": "Business Name",
   "category": "Local business category",
+  "city": "City, State",
+  "heroEyebrow": "A short category or neighborhood cue",
   "headline": "A concise headline about what the business offers.",
   "intro": "A short, factual introduction based on information the business has publicly shared.",
-  "phone": "+1 801 555 0100",
-  "email": "hello@example.com",
   "address": "Street address, City, State ZIP",
-  "hours": ["Monday–Friday · 9am–5pm", "Saturday · 10am–2pm", "Sunday · Closed"],
+  "googlePlaceId": "",
+  "googleMapsUrl": "",
+  "officialWebsiteUrl": "",
+  "phone": "",
+  "email": "",
+  "hours": [],
+  "primaryCta": null,
+  "secondaryCta": null,
+  "offeringsLabel": "Services",
+  "offeringsHeading": "Good work, close to home.",
+  "offeringsIntro": "A short overview of the work this business does.",
   "services": [
-    { "name": "Primary service", "description": "A brief description confirmed by the business profile." },
-    { "name": "Another service", "description": "A second service offered by the business." }
+    { "name": "Confirmed service", "description": "A brief, sourced description." }
   ],
-  "highlights": ["Locally owned", "Serving the neighborhood", "Call for availability"],
-  "heroImage": "/business-sites/example-business/hero.jpg",
+  "highlights": [],
+  "media": [],
   "accentColor": "#176b58",
-  "googleMapsUrl": "https://maps.google.com/?q=Business+Name",
-  "sourceUrl": "Google Business Profile URL used to verify public details"
+  "visualStyle": "editorial",
+  "designDirection": "Describe the business-specific palette, type, imagery, and graphic motif."
 }
