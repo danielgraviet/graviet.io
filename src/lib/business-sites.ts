@@ -71,6 +71,7 @@ export type BusinessSite = {
   designDirection?: string;
   googleMapsUrl?: string;
   sourceUrl?: string;
+  researchSources?: string[];
 };
 
 function isSlug(value: string) {

@@ -10,14 +10,20 @@ const noStoreHeaders = {
   Expires: "0",
 };
 
-export async function GET(
+export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
   const site = await getBusinessSite(slug);
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
-  const photoName = new URL(request.url).searchParams.get("name") || "";
+  let photoName = "";
+  try {
+    const payload = await request.json() as { photoName?: unknown };
+    photoName = typeof payload.photoName === "string" ? payload.photoName : "";
+  } catch {
+    return new Response("Invalid photo request.", { status: 400, headers: noStoreHeaders });
+  }
 
   if (!site?.googlePlaceId || !apiKey) {
     return new Response("Google Places is not configured.", { status: 503, headers: noStoreHeaders });

@@ -1,0 +1,63 @@
+{
+  "slug": "zbdecking",
+  "name": "ZBDECKING",
+  "category": "Deck builder · Vineyard, Utah",
+  "city": "Vineyard, Utah",
+  "researchSources": [
+    "https://www.localdeckbuilders.com/Utah/Vineyard/",
+    "https://www.buildzoom.com/contractor/zb-decking-llc"
+  ],
+  "heroEyebrow": "OUTDOOR LIVING · UTAH COUNTY",
+  "headline": "Build a better place to land.",
+  "intro": "Custom decks and pergolas for a little more room to live outside.",
+  "googlePlaceId": "ChIJ1Z7WgpaFTYcR6WjHlE3R1K0",
+  "primaryCta": {
+    "label": "Talk about your project",
+    "href": "place-phone"
+  },
+  "offeringsLabel": "Outdoor living, built around you",
+  "offeringsHeading": "Start with the shape of your space.",
+  "offeringsIntro": "A considered plan for more time outside.",
+  "services": [
+    {
+      "name": "Custom deck builds",
+      "description": "A deck shaped around your home, your yard, and how you want to use it."
+    },
+    {
+      "name": "Deck replacement",
+      "description": "Give a tired outdoor space a fresh start and a new point of view."
+    },
+    {
+      "name": "Pergolas & shade",
+      "description": "Add definition and a little shelter to the place you gather."
+    }
+  ],
+  "highlights": ["Decks & pergolas", "Serving Utah County", "Talk through your project"],
+  "heroImage": "/business-sites/zbdecking/hero-concept.png",
+  "heroImageAlt": "Illustrated cedar deck and open pergola overlooking the Wasatch Mountains; original concept artwork",
+  "heroImageCredit": "Original concept artwork",
+  "media": [
+    {
+      "src": "/business-sites/zbdecking/hero-concept.png",
+      "alt": "Illustrated cedar deck and open pergola overlooking the Wasatch Mountains",
+      "caption": "A little more room to live outside",
+      "credit": "Original concept artwork"
+    }
+  ],
+  "assetRights": [
+    {
+      "file": "/business-sites/zbdecking/hero-concept.png",
+      "basis": "generated",
+      "credit": "Original concept artwork"
+    }
+  ],
+  "accentColor": "#64735b",
+  "visualStyle": "editorial",
+  "designDirection": "Mountain-modern and architectural: pine, pale limestone, warm cedar, fine blueprint details, and a confident editorial serif. Keep the page calm and crafted rather than rustic clip art.",
+  "heroBadge": "BUILT FOR OUTSIDE",
+  "visitEyebrow": "VINEYARD · UTAH COUNTY",
+  "visitHeading": "Let’s shape your outdoor space.",
+  "visitIntro": "Tell us what you have in mind.",
+  "galleryEyebrow": "PHOTOS SHARED ON GOOGLE MAPS",
+  "galleryHeading": "Made for the outdoors."
+}

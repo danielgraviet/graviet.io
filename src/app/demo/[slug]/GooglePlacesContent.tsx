@@ -36,6 +36,46 @@ type FallbackReview = { quote: string; author: string; rating?: number; sourceUr
 
 const PlacesContext = createContext<PlacesContent | null>(null);
 
+function useGooglePhoto(slug: string, photoName?: string) {
+  const [imageUrl, setImageUrl] = useState<string>();
+  useEffect(() => {
+    if (!photoName) { setImageUrl(undefined); return; }
+    const controller = new AbortController();
+    let objectUrl: string | undefined;
+    setImageUrl(undefined);
+    fetch(`/api/business-sites/${encodeURIComponent(slug)}/places/photo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ photoName }),
+      cache: "no-store",
+      signal: controller.signal,
+    }).then((response) => response.ok ? response.blob() : null)
+      .then((blob) => {
+        if (!blob) return;
+        objectUrl = URL.createObjectURL(blob);
+        setImageUrl(objectUrl);
+      }).catch(() => undefined);
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [slug, photoName]);
+  return imageUrl;
+}
+
+export function BusinessAction({ label, href, fallbackHref, className }: {
+  label: string;
+  href: string;
+  fallbackHref?: string;
+  className: string;
+}) {
+  const data = useContext(PlacesContext);
+  const placePhone = data?.phoneNumber ? `tel:${data.phoneNumber.replace(/[^0-9+]/g, "")}` : undefined;
+  const targetHref = href === "place-phone" ? placePhone || fallbackHref || "#visit" : href;
+  const external = targetHref.startsWith("http");
+  return <a className={className} href={targetHref} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{label}<span aria-hidden="true">↗</span></a>;
+}
+
 export function GooglePlacesProvider({
   slug,
   placeId,
@@ -76,6 +116,62 @@ export function GooglePlacesProvider({
 
 function GoogleMapsLogo({ dark = false }: { dark?: boolean }) {
   return <Image src={dark ? "/business-sites/shared/google-maps-dark.png" : "/business-sites/shared/google-maps-white.png"} width={98} height={18} alt="Google Maps" className={styles.googleLogo} />;
+}
+
+export function GooglePlacesHero({ slug, businessName, fallbackImage, alt, fallbackCredit, fallbackSource }: {
+  slug: string;
+  businessName: string;
+  fallbackImage?: string;
+  alt: string;
+  fallbackCredit?: string;
+  fallbackSource?: string;
+}) {
+  const data = useContext(PlacesContext);
+  const photo = data?.photos?.[0];
+  const imageUrl = useGooglePhoto(slug, photo?.name);
+  if (!photo || !imageUrl) {
+    return <>
+      {fallbackImage ? <Image src={fallbackImage} alt={alt} fill priority sizes="(max-width: 760px) 92vw, 48vw" className={styles.heroPhoto} /> : null}
+      {fallbackCredit ? fallbackSource ? <a className={styles.photoCredit} href={fallbackSource} target="_blank" rel="noreferrer">Photo: {fallbackCredit}</a> : <span className={styles.photoCredit}>Artwork: {fallbackCredit}</span> : null}
+    </>;
+  }
+
+  const author = photo.authorAttributions?.[0];
+  const source = photo.googleMapsUri || data?.googleMapsUri || "#visit";
+  return <>
+    <img className={styles.heroPhoto} src={imageUrl} alt={`${businessName} photo shared on Google Maps`} fetchPriority="high" />
+    <div className={styles.heroGoogleAttribution}>
+      <GoogleMapsLogo />
+      {author?.photoUri ? <a className={styles.authorAvatar} href={author.uri || source} target="_blank" rel="noreferrer"><img src={author.photoUri} alt="" /></a> : null}
+      <span>{author?.uri ? <a href={author.uri} target="_blank" rel="noreferrer">Photo by {author.displayName || "Google Maps contributor"}</a> : "Google Maps photo"}</span>
+      <a className={styles.heroPhotoSource} href={source} target="_blank" rel="noreferrer">View source ↗</a>
+      {photo.flagContentUri ? <a className={styles.heroPhotoReport} href={photo.flagContentUri} target="_blank" rel="noreferrer">Report</a> : null}
+    </div>
+  </>;
+}
+
+function GooglePhotoCard({ photo, businessName, source, slug, lead }: {
+  photo: PlacePhoto;
+  businessName: string;
+  source: string;
+  slug: string;
+  lead: boolean;
+}) {
+  const author = photo.authorAttributions?.[0];
+  const imageUrl = useGooglePhoto(slug, photo.name);
+  return (
+    <figure className={`${styles.googlePhotoCard} ${lead ? styles.googlePhotoLead : ""}`}>
+      <a className={styles.googlePhotoLink} href={source} target="_blank" rel="noreferrer" aria-label={`Open this photo of ${businessName} on Google Maps`}>
+        {imageUrl ? <img className={styles.googlePhotoImage} src={imageUrl} alt={`${businessName} photo from Google Maps`} loading="lazy" /> : null}
+      </a>
+      <figcaption className={styles.googlePhotoAttribution}>
+        {author?.photoUri ? <a className={styles.authorAvatar} href={author.uri || source} target="_blank" rel="noreferrer"><img src={author.photoUri} alt="" loading="lazy" /></a> : null}
+        <span>{author?.uri ? <a href={author.uri} target="_blank" rel="noreferrer">Photo by {author.displayName || "Google Maps contributor"}</a> : "Google Maps photo"}</span>
+        <a className={styles.photoSourceLink} href={source} target="_blank" rel="noreferrer">View source ↗</a>
+        {photo.flagContentUri ? <a className={styles.photoReportLink} href={photo.flagContentUri} target="_blank" rel="noreferrer">Report</a> : null}
+      </figcaption>
+    </figure>
+  );
 }
 
 function stars(rating: number) {
@@ -180,16 +276,17 @@ export function GoogleReviewSection({
   );
 }
 
-export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl, eyebrow, heading }: {
+export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl, eyebrow, heading, heroUsesPlacePhoto = false }: {
   slug: string;
   businessName: string;
   fallbackMedia?: { src: string; alt: string; caption?: string; credit?: string; sourceUrl?: string }[];
   mapsUrl?: string;
   eyebrow?: string;
   heading?: string;
+  heroUsesPlacePhoto?: boolean;
 }) {
   const data = useContext(PlacesContext);
-  const photos = data?.photos || [];
+  const photos = (data?.photos || []).slice(heroUsesPlacePhoto ? 1 : 0, heroUsesPlacePhoto ? 4 : 3);
 
   if (!photos.length) {
     if (!fallbackMedia.length) return null;
@@ -208,23 +305,9 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
     <section className={styles.gallery} aria-label="Google Maps photos">
       <div className={styles.galleryHeading}><p className={styles.eyebrow}>{eyebrow || `FROM THE ${businessName.toUpperCase()} COMMUNITY`}</p><h2>{heading || "A look around."}</h2><GoogleMapsLogo dark /></div>
       <div className={styles.googlePhotoGrid}>
-        {photos.slice(0, 3).map((photo, index) => {
-          const author = photo.authorAttributions?.[0];
+        {photos.map((photo, index) => {
           const photoSource = photo.googleMapsUri || data?.googleMapsUri || mapsUrl || "#visit";
-          const photoEndpoint = `/api/business-sites/${encodeURIComponent(slug)}/places/photo?name=${encodeURIComponent(photo.name)}`;
-          return (
-            <figure className={`${styles.googlePhotoCard} ${index === 0 ? styles.googlePhotoLead : ""}`} key={photo.name}>
-              <a className={styles.googlePhotoLink} href={photoSource} target="_blank" rel="noreferrer" aria-label={`Open this photo of ${businessName} on Google Maps`}>
-                <img className={styles.googlePhotoImage} src={photoEndpoint} alt={`${businessName} photo from Google Maps`} loading="lazy" />
-              </a>
-              <figcaption className={styles.googlePhotoAttribution}>
-                {author?.photoUri ? <a className={styles.authorAvatar} href={author.uri || photoSource} target="_blank" rel="noreferrer"><img src={author.photoUri} alt="" loading="lazy" /></a> : null}
-                <span>{author?.uri ? <a href={author.uri} target="_blank" rel="noreferrer">Photo by {author.displayName || "Google Maps contributor"}</a> : "Google Maps photo"}</span>
-                <a className={styles.photoSourceLink} href={photoSource} target="_blank" rel="noreferrer">View source ↗</a>
-                {photo.flagContentUri ? <a className={styles.photoReportLink} href={photo.flagContentUri} target="_blank" rel="noreferrer">Report</a> : null}
-              </figcaption>
-            </figure>
-          );
+          return <GooglePhotoCard key={photo.name} photo={photo} businessName={businessName} source={photoSource} slug={slug} lead={index === 0 && photos.length > 1} />;
         })}
       </div>
       <div className={styles.googlePhotoFooter}><GoogleMapsLogo dark /><a href={data?.googleMapsUri || mapsUrl || "#visit"} target="_blank" rel="noreferrer">Open {businessName} on Google Maps ↗</a></div>

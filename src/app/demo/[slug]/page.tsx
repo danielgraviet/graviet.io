@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getBusinessSite, getBusinessSiteSlugs } from "@/lib/business-sites";
-import { GooglePlacesProvider, GoogleReviewProof, GoogleReviewSection, GooglePlacesGallery, GooglePlaceContactDetails } from "./GooglePlacesContent";
+import { GooglePlacesProvider, GoogleReviewProof, GoogleReviewSection, GooglePlacesGallery, GooglePlaceContactDetails, GooglePlacesHero, BusinessAction } from "./GooglePlacesContent";
 import styles from "./business-demo.module.css";
 
 const displayFont = Bricolage_Grotesque({ subsets: ["latin"], variable: "--demo-display" });
@@ -55,7 +55,7 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
           <span><strong>{site.name}</strong><small>{site.category}</small></span>
         </a>
         <nav className={styles.nav} aria-label="Main navigation">{site.signatureDrinks?.length || site.services.length ? <a href="#favorites">{site.offeringsLabel || "What we offer"}</a> : null}<a href="#reviews">Reviews</a><a href="#visit">Visit</a></nav>
-        {primaryCta ? <a className={`${styles.button} ${styles.buttonSmall}`} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
+        {primaryCta ? <BusinessAction className={`${styles.button} ${styles.buttonSmall}`} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
       </header>
 
       <section id="home" className={styles.hero}>
@@ -64,18 +64,17 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
           <h1>{site.headline}</h1>
           <p className={styles.heroIntro}>{site.intro}</p>
           <div className={styles.heroActions}>
-            {primaryCta ? <a className={styles.button} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
+            {primaryCta ? <BusinessAction className={styles.button} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
             {secondaryCta ? <a className={styles.textLink} href={secondaryCta.href} target={secondaryCta.href.startsWith("http") ? "_blank" : undefined} rel={secondaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{secondaryCta.label}<span aria-hidden="true">↗</span></a> : null}
           </div>
           <GoogleReviewProof initialSummary={site.reviewSummary} mapsUrl={mapsUrl} />
         </div>
         <div className={styles.heroVisual}>
           <div className={styles.heroPhotoWrap}>
-            {heroImage ? <Image src={heroImage} alt={heroAlt} fill priority sizes="(max-width: 760px) 92vw, 48vw" className={styles.heroPhoto} /> : null}
+            <GooglePlacesHero slug={site.slug} businessName={site.name} fallbackImage={heroImage} alt={heroAlt} fallbackCredit={site.heroImageCredit} fallbackSource={heroImageSource} />
             {site.heroBadge ? <span className={styles.photoStamp}>{site.heroBadge}</span> : null}
           </div>
           {site.mascotImage ? <Image src={site.mascotImage} alt={site.mascotImageAlt || `${site.name} brand illustration`} width={218} height={218} className={styles.mascot} priority /> : null}
-          {site.heroImageCredit ? heroImageSource ? <a className={styles.photoCredit} href={heroImageSource} target="_blank" rel="noreferrer">Photo: {site.heroImageCredit}</a> : <span className={styles.photoCredit}>Artwork: {site.heroImageCredit}</span> : null}
         </div>
       </section>
 
@@ -97,7 +96,7 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
 
       {site.googlePlaceId || site.reviewSummary || site.reviews?.length ? <GoogleReviewSection fallbackSummary={site.reviewSummary} fallbackReviews={site.reviews} mapsUrl={mapsUrl} /> : null}
 
-      <GooglePlacesGallery slug={site.slug} businessName={site.name} fallbackMedia={site.media} mapsUrl={mapsUrl} eyebrow={site.galleryEyebrow} heading={site.galleryHeading} />
+      <GooglePlacesGallery slug={site.slug} businessName={site.name} fallbackMedia={site.media} mapsUrl={mapsUrl} eyebrow={site.galleryEyebrow} heading={site.galleryHeading} heroUsesPlacePhoto={Boolean(site.googlePlaceId)} />
 
       <section id="visit" className={styles.visit}>
         <div className={styles.visitShape} aria-hidden="true">✳</div>
@@ -109,7 +108,7 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
       </section>
 
       <footer className={styles.footer}><span>{site.name} · {site.city}</span><span className={styles.footerMeta}>Independent concept preview by Daniel Graviet <span><a href={`/demo/${site.slug}/terms`}>Terms</a> · <a href={`/demo/${site.slug}/privacy`}>Privacy</a></span></span></footer>
-      {primaryCta ? <a className={styles.mobileCta} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
+      {primaryCta ? <BusinessAction className={styles.mobileCta} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
     </main>
     </GooglePlacesProvider>
   );
