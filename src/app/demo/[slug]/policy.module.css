@@ -1,0 +1,9 @@
+.policy { width: min(100% - 40px, 760px); min-height: 100vh; margin: 0 auto; padding: 54px 0 90px; color: #2b1825; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
+.policy a { color: #a52c68; text-underline-offset: 3px; }
+.back { display: inline-block; margin-bottom: 56px; color: #65545c !important; font-size: 13px; text-decoration: none; }
+.eyebrow { margin: 0 0 14px; color: #a52c68; font-size: 11px; font-weight: 700; letter-spacing: .18em; }
+.policy h1 { margin: 0; font-family: var(--font-source-serif), Georgia, serif; font-size: clamp(48px, 9vw, 74px); line-height: 1; letter-spacing: -.04em; }
+.updated { margin: 14px 0 35px !important; color: #81747a !important; font-size: 12px !important; }
+.policy h2 { margin: 38px 0 10px; font-size: 19px; }
+.policy p { color: #5d5056; font-size: 15px; line-height: 1.8; }
+.footerLink { display: inline-block; margin-top: 38px; font-size: 13px; }

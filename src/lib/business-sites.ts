@@ -15,7 +15,44 @@ export type BusinessSite = {
   hours?: string[];
   services: { name: string; description?: string }[];
   highlights?: string[];
+  heroEyebrow?: string;
   heroImage?: string;
+  heroImageAlt?: string;
+  heroImageCredit?: string;
+  heroImageSource?: string;
+  logoImage?: string;
+  mascotImage?: string;
+  media?: {
+    src: string;
+    alt: string;
+    caption?: string;
+    credit?: string;
+    sourceUrl?: string;
+  }[];
+  reviewSummary?: {
+    rating: number;
+    reviewCount: number;
+    sourceUrl: string;
+    verifiedAt?: string;
+  };
+  reviews?: {
+    quote: string;
+    author: string;
+    rating?: number;
+    sourceUrl?: string;
+  }[];
+  signatureDrinks?: {
+    name: string;
+    description?: string;
+    reviewMentions?: number;
+  }[];
+  drinksHeading?: string;
+  drinksIntro?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  instagramUrl?: string;
+  officialWebsiteUrl?: string;
+  googlePlaceId?: string;
   accentColor?: string;
   googleMapsUrl?: string;
   sourceUrl?: string;

@@ -2,9 +2,10 @@
   "slug": "pink-axolotl",
   "name": "Pink Axolotl",
   "category": "Coffee shop · Orem, Utah",
-  "headline": "A neighborhood coffee stop in Orem.",
-  "intro": "Find Pink Axolotl at 163 400 N in Orem, Utah. Stop by for coffee and café drinks.",
-  "address": "163 400 N, Orem, UT 84057",
+  "heroEyebrow": "COFFEE · MATCHA · OREM, UTAH",
+  "headline": "Your next coffee run, with a little more color.",
+  "intro": "A playful stop for coffee, matcha, and specialty drinks at 163 W 400 N in Orem.",
+  "address": "163 W 400 N, Orem, UT 84057",
   "hours": [
     "Monday · 7:30 AM–5 PM",
     "Tuesday · 7:30 AM–5 PM",
@@ -19,7 +20,67 @@
     { "name": "Matcha drinks" },
     { "name": "Specialty lattes" }
   ],
-  "highlights": ["Coffee shop in Orem", "Wheelchair-accessible parking", "Open daily"],
+  "signatureDrinks": [
+    { "name": "Mexican mocha", "description": "A creamy chocolate-and-coffee favorite, according to Google reviewers.", "reviewMentions": 9 },
+    { "name": "Matcha drinks", "description": "Reviewers call out the matcha latte and the variety of matcha drinks." },
+    { "name": "Horchata", "description": "One of the café drinks people mention when sharing their favorites.", "reviewMentions": 8 },
+    { "name": "Dulce de leche latte", "description": "A latte favorite that comes up in Google review topics.", "reviewMentions": 9 }
+  ],
+  "drinksHeading": "The drinks people talk about.",
+  "drinksIntro": "A few Google review favorites. Check the full current menu and prices on Pink Axolotl’s ordering site.",
+  "reviewSummary": {
+    "rating": 4.8,
+    "reviewCount": 118,
+    "sourceUrl": "https://maps.app.goo.gl/wTCtDYrSyZyC5mg48",
+    "verifiedAt": "2026-11-02"
+  },
+  "googlePlaceId": "ChIJIYF3zQKbTYcREbbnvNoLOTA",
+  "reviews": [
+    {
+      "quote": "The matcha latte and the variety of matcha drinks were fantastic.",
+      "author": "Google reviewer",
+      "rating": 5,
+      "sourceUrl": "https://maps.app.goo.gl/wTCtDYrSyZyC5mg48"
+    },
+    {
+      "quote": "Their drinks are actually balanced.",
+      "author": "Mr Trout · Google reviewer",
+      "rating": 5,
+      "sourceUrl": "https://maps.app.goo.gl/wTCtDYrSyZyC5mg48"
+    }
+  ],
+  "heroImage": "/business-sites/pink-axolotl/iced-coffee.jpg",
+  "heroImageAlt": "Iced chocolate coffee with Pink Axolotl’s mascot printed on the cup",
+  "heroImageCredit": "Pink Axolotl online store",
+  "heroImageSource": "https://www.pinkaxolotlcoffee.com/",
+  "mascotImage": "/business-sites/pink-axolotl/axolotl-illustration.png",
+  "logoImage": "/business-sites/pink-axolotl/axolotl-illustration.png",
+  "media": [
+    {
+      "src": "/business-sites/pink-axolotl/iced-coffee.jpg",
+      "alt": "Iced chocolate coffee in a Pink Axolotl branded cup",
+      "caption": "Pink Axolotl iced coffee",
+      "credit": "Pink Axolotl online store",
+      "sourceUrl": "https://www.pinkaxolotlcoffee.com/"
+    },
+    {
+      "src": "/business-sites/pink-axolotl/axolotl-illustration.png",
+      "alt": "Original illustration of a pink axolotl holding an iced matcha drink",
+      "caption": "A little axolotl energy",
+      "credit": "Original concept illustration"
+    }
+  ],
+  "primaryCta": {
+    "label": "Order online",
+    "href": "https://www.pinkaxolotlcoffee.com/s/order?location=LZSEJ4YRJNCTP"
+  },
+  "secondaryCta": {
+    "label": "Get directions",
+    "href": "https://www.google.com/maps/place/Pink+Axolotl/@40.3042459,-111.6996676,17z/"
+  },
+  "instagramUrl": "https://www.instagram.com/pinkaxolotlcoffeeshop/",
+  "officialWebsiteUrl": "https://www.pinkaxolotlcoffee.com/",
+  "highlights": ["Coffee shop in Orem", "Wheelchair-accessible parking", "Order online"],
   "accentColor": "#a52c68",
   "googleMapsUrl": "https://www.google.com/maps/place/Pink+Axolotl/@40.3042459,-111.6996676,17z/",
   "sourceUrl": "https://maps.app.goo.gl/wTCtDYrSyZyC5mg48"

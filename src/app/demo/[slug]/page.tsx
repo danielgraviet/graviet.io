@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Image from "next/image";
+import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getBusinessSite, getBusinessSiteSlugs } from "@/lib/business-sites";
+import { GooglePlacesProvider, GoogleReviewProof, GoogleReviewSection, GooglePlacesGallery } from "./GooglePlacesContent";
+import styles from "./business-demo.module.css";
+
+const displayFont = Bricolage_Grotesque({ subsets: ["latin"], variable: "--demo-display" });
+const bodyFont = DM_Sans({ subsets: ["latin"], variable: "--demo-body" });
 
 export const dynamicParams = false;
 
@@ -10,98 +16,99 @@ export async function generateStaticParams() {
   return (await getBusinessSiteSlugs()).map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const site = await getBusinessSite(slug);
-  if (!site) return { title: "Business website preview", robots: { index: false, follow: false } };
-
-  return {
-    title: `${site.name} | Website Preview`,
-    description: site.intro,
-    robots: { index: false, follow: false },
-  };
+  if (!site) return { title: { absolute: "Business website preview" }, robots: { index: false, follow: false } };
+  return { title: { absolute: site.name }, description: site.intro, robots: { index: false, follow: false } };
 }
 
 function telephoneHref(phone?: string) {
-  return phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : undefined;
+  return phone ? `tel:${phone.replace(/[^0-9+]/g, "")}` : undefined;
 }
 
-export default async function BusinessDemoPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BusinessDemoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const site = await getBusinessSite(slug);
   if (!site) notFound();
 
-  const accent = site.accentColor || "#176b58";
+  const accent = site.accentColor || "#e83778";
   const phoneHref = telephoneHref(site.phone);
+  const primaryCta = site.primaryCta || (phoneHref ? { label: "Call the shop", href: phoneHref } : undefined);
+  const secondaryCta = site.secondaryCta || (site.googleMapsUrl ? { label: "Get directions", href: site.googleMapsUrl } : undefined);
+  const heroImage = site.heroImage || site.media?.[0]?.src;
+  const heroAlt = site.heroImageAlt || site.media?.[0]?.alt || `${site.name} at the shop`;
 
   return (
-    <main className="min-h-screen bg-[#fbfaf7] text-[#1f2925]" style={{ "--business-accent": accent } as CSSProperties}>
-      <div className="bg-[#202722] px-4 py-2 text-center font-sans text-xs text-white/80">
-        Website concept prepared for {site.name} · Preview only
+    <GooglePlacesProvider slug={site.slug} placeId={site.googlePlaceId} initialSummary={site.reviewSummary} initialReviews={site.reviews}>
+    <main className={`${styles.site} ${displayFont.variable} ${bodyFont.variable}`} style={{ "--demo-accent": accent } as CSSProperties}>
+      <div className={styles.previewNotice}>
+        <span>Independent website concept · Preview only</span>
+        {site.reviewSummary ? <a href={site.reviewSummary.sourceUrl} target="_blank" rel="noreferrer"><span aria-label={`${site.reviewSummary.rating} out of 5 stars`} className={styles.stars}>★★★★★</span><strong>{site.reviewSummary.rating}</strong><span>· {site.reviewSummary.reviewCount} Google reviews</span></a> : null}
       </div>
-      <header className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-5 md:px-8">
-        <a href="#home" className="font-sans text-lg font-bold tracking-tight" style={{ color: accent }}>{site.name}</a>
-        <nav className="hidden gap-7 font-sans text-sm text-[#52605a] md:flex">
-          <a href="#services" className="hover:text-black">Services</a>
-          {site.hours?.length ? <a href="#hours" className="hover:text-black">Hours</a> : null}
-          <a href="#contact" className="hover:text-black">Contact</a>
-        </nav>
-        {phoneHref ? <a href={phoneHref} className="rounded-full px-5 py-2.5 font-sans text-sm font-semibold text-white" style={{ backgroundColor: accent }}>Call {site.phone}</a> : null}
+
+      <header className={styles.header}>
+        <a href="#home" className={styles.brand} aria-label={`${site.name} home`}>
+          {site.logoImage ? <Image src={site.logoImage} alt="" width={54} height={54} className={styles.logoImage} /> : null}
+          <span><strong>{site.name}</strong><small>{site.category}</small></span>
+        </a>
+        <nav className={styles.nav} aria-label="Main navigation"><a href="#favorites">The drinks</a><a href="#reviews">Reviews</a><a href="#visit">Find us</a></nav>
+        {primaryCta ? <a className={`${styles.button} ${styles.buttonSmall}`} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
       </header>
 
-      <section id="home" className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[1fr_0.88fr] md:px-8 md:pb-28 md:pt-16">
-        <div>
-          <p className="mb-5 font-sans text-xs font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{site.category}</p>
-          <h1 className="max-w-2xl text-5xl leading-[1.04] tracking-tight md:text-7xl">{site.headline}</h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#59645e]">{site.intro}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            {phoneHref ? <a href={phoneHref} className="rounded-full px-6 py-3 font-sans text-sm font-semibold text-white" style={{ backgroundColor: accent }}>Call {site.name}</a> : null}
-            {site.googleMapsUrl ? <a href={site.googleMapsUrl} target="_blank" rel="noreferrer" className="rounded-full border border-[#d8ddd8] px-6 py-3 font-sans text-sm font-semibold">Get directions</a> : null}
+      <section id="home" className={styles.hero}>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}><span className={styles.eyebrowDot} /> {site.heroEyebrow || site.category}</p>
+          <h1>{site.headline}</h1>
+          <p className={styles.heroIntro}>{site.intro}</p>
+          <div className={styles.heroActions}>
+            {primaryCta ? <a className={styles.button} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
+            {secondaryCta ? <a className={styles.textLink} href={secondaryCta.href} target={secondaryCta.href.startsWith("http") ? "_blank" : undefined} rel={secondaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{secondaryCta.label}<span aria-hidden="true">↗</span></a> : null}
           </div>
+          <GoogleReviewProof initialSummary={site.reviewSummary} mapsUrl={site.googleMapsUrl} />
         </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-[#e5e9e2] md:min-h-[460px]">
-          {site.heroImage ? <Image src={site.heroImage} alt={`${site.name}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 45vw" /> : <div className="flex h-full min-h-[300px] items-end p-8 md:min-h-[460px]"><span className="max-w-xs text-3xl leading-tight text-[#718078]">A welcoming place, right in your neighborhood.</span></div>}
+        <div className={styles.heroVisual}>
+          <div className={styles.heroPhotoWrap}>
+            {heroImage ? <Image src={heroImage} alt={heroAlt} fill priority sizes="(max-width: 760px) 92vw, 48vw" className={styles.heroPhoto} /> : null}
+            <span className={styles.photoStamp}>MADE FOR<br />THE MOOD</span>
+          </div>
+          {site.mascotImage ? <Image src={site.mascotImage} alt="Playful axolotl drink illustration" width={218} height={218} className={styles.mascot} priority /> : null}
+          {site.heroImageCredit ? <a className={styles.photoCredit} href={site.heroImageSource || site.sourceUrl} target="_blank" rel="noreferrer">Photo: {site.heroImageCredit}</a> : null}
         </div>
       </section>
 
-      {site.highlights?.length ? <section className="border-y border-[#e6e8e2] bg-white"><div className="mx-auto grid max-w-6xl gap-5 px-5 py-8 font-sans text-sm font-medium text-[#52605a] sm:grid-cols-3 md:px-8">{site.highlights.map((item) => <p key={item} className="text-center">{item}</p>)}</div></section> : null}
+      {site.highlights?.length ? <section className={styles.highlightStrip} aria-label="Highlights">{site.highlights.map((highlight) => <span key={highlight}><i aria-hidden="true">✳</i>{highlight}</span>)}</section> : null}
 
-      <section id="services" className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
-        <p className="font-sans text-xs font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>What we do</p>
-        <h2 className="mt-3 text-4xl tracking-tight md:text-5xl">How we can help</h2>
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          {site.services.map((service, index) => <article key={service.name} className="rounded-3xl border border-[#e6e8e2] bg-white p-7 md:p-9">
-            <span className="font-sans text-xs font-bold" style={{ color: accent }}>0{index + 1}</span>
-            <h3 className="mt-4 text-2xl">{service.name}</h3>
-            {service.description ? <p className="mt-3 max-w-lg leading-7 text-[#647069]">{service.description}</p> : null}
-          </article>)}
+      {site.signatureDrinks?.length ? (
+        <section id="favorites" className={styles.favorites}>
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>THE REGULARS’ SHORTLIST</p><h2>{site.drinksHeading || "A few crowd favorites."}</h2><p>{site.drinksIntro || "A taste of what people come back for."}</p></div>
+          <div className={styles.drinkGrid}>{site.signatureDrinks.map((drink, index) => <article className={`${styles.drinkCard} ${styles[`drinkTone${index % 3}`]}`} key={drink.name}>
+            <span className={styles.drinkNumber}>0{index + 1}</span><span className={styles.drinkSpark} aria-hidden="true">✳</span><h3>{drink.name}</h3>
+            {drink.description ? <p>{drink.description}</p> : null}{drink.reviewMentions ? <span className={styles.mentionTag}>Mentioned in {drink.reviewMentions} Google reviews</span> : null}
+          </article>)}</div>
+        </section>
+      ) : site.services.length ? (
+        <section id="favorites" className={styles.favorites}><div className={styles.sectionHeading}><p className={styles.eyebrow}>WHAT WE DO</p><h2>Good work, close to home.</h2></div>
+          <div className={styles.drinkGrid}>{site.services.map((service, index) => <article className={`${styles.drinkCard} ${styles[`drinkTone${index % 3}`]}`} key={service.name}><span className={styles.drinkNumber}>0{index + 1}</span><h3>{service.name}</h3>{service.description ? <p>{service.description}</p> : null}</article>)}</div>
+        </section>
+      ) : null}
+
+      {site.reviewSummary || site.reviews?.length ? <GoogleReviewSection fallbackSummary={site.reviewSummary} fallbackReviews={site.reviews} mapsUrl={site.googleMapsUrl} /> : null}
+
+      <GooglePlacesGallery slug={site.slug} businessName={site.name} fallbackMedia={site.media} mapsUrl={site.googleMapsUrl} />
+
+      <section id="visit" className={styles.visit}>
+        <div className={styles.visitShape} aria-hidden="true">✳</div>
+        <div className={styles.visitCopy}><p className={styles.eyebrow}>YOUR OREM COFFEE RUN</p><h2>See you soon?</h2><p>{site.address}</p>
+          {site.phone ? <p><a href={phoneHref}>{site.phone}</a></p> : null}
+          <div className={styles.visitActions}>{secondaryCta ? <a className={`${styles.button} ${styles.buttonLight}`} href={secondaryCta.href} target={secondaryCta.href.startsWith("http") ? "_blank" : undefined} rel={secondaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{secondaryCta.label}<span aria-hidden="true">↗</span></a> : null}{site.instagramUrl ? <a className={styles.visitLink} href={site.instagramUrl} target="_blank" rel="noreferrer">Follow on Instagram ↗</a> : null}</div>
         </div>
+        <div className={styles.hoursCard}><h3>Come by today</h3>{site.hours?.length ? <ul>{site.hours.map((hour) => { const [day, time] = hour.split(" · "); return <li key={hour}><span>{day}</span><span>{time}</span></li>; })}</ul> : <p>Check the listing for current hours.</p>}{site.googleMapsUrl ? <a href={site.googleMapsUrl} target="_blank" rel="noreferrer">Open in Google Maps ↗</a> : null}</div>
       </section>
 
-      <section id="contact" className="bg-[#202722] text-white">
-        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-2 md:px-8 md:py-20">
-          <div><p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-white/55">Visit or get in touch</p><h2 className="mt-4 text-4xl tracking-tight md:text-5xl">We’re here to help.</h2>
-            <div className="mt-8 space-y-3 font-sans text-sm text-white/75">
-              {site.address ? <p>{site.address}</p> : null}
-              {site.phone ? <p><a href={phoneHref}>{site.phone}</a></p> : null}
-              {site.email ? <p><a href={`mailto:${site.email}`}>{site.email}</a></p> : null}
-            </div>
-          </div>
-          <div id="hours" className="md:justify-self-end md:min-w-72"><h3 className="font-sans text-sm font-semibold">Hours</h3>
-            {site.hours?.length ? <ul className="mt-4 space-y-2 font-sans text-sm text-white/70">{site.hours.map((hour) => <li key={hour}>{hour}</li>)}</ul> : <p className="mt-4 font-sans text-sm text-white/60">Call for current hours.</p>}
-            {site.googleMapsUrl ? <a href={site.googleMapsUrl} target="_blank" rel="noreferrer" className="mt-7 inline-flex rounded-full bg-white px-5 py-3 font-sans text-sm font-semibold text-[#202722]">Open in Maps</a> : null}
-          </div>
-        </div>
-        <footer className="border-t border-white/10 px-5 py-5 text-center font-sans text-xs text-white/45">{site.name} · Website concept by Daniel Graviet</footer>
-      </section>
+      <footer className={styles.footer}><span>{site.name} · {site.address}</span><span className={styles.footerMeta}>Independent concept preview by Daniel Graviet <span><a href={`/demo/${site.slug}/terms`}>Terms</a> · <a href={`/demo/${site.slug}/privacy`}>Privacy</a></span></span></footer>
+      {primaryCta ? <a className={styles.mobileCta} href={primaryCta.href} target={primaryCta.href.startsWith("http") ? "_blank" : undefined} rel={primaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{primaryCta.label}<span aria-hidden="true">↗</span></a> : null}
     </main>
+    </GooglePlacesProvider>
   );
 }
