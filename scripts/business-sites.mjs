@@ -147,7 +147,6 @@ async function scaffold(flags) {
   };
   await writeFile(profilePath, `${JSON.stringify(profile, null, 2)}\n`, { flag: "wx" });
   await mkdir(path.join(assetsRoot, slug), { recursive: true });
-  await writeFile(path.join(assetsRoot, slug, "README.md"), `# ${name} assets\n\nKeep only owner-provided, permission-cleared, or licensed assets here. Record source, credit, rights basis, and useful alt text in the JSON profile. Never save Google Places photos or photo names in this folder.\n`);
   console.log(`Created ${path.relative(root, profilePath)} and ${path.relative(root, assetsRoot)}/${slug}/`);
   console.log("Next: verify facts from official sources, pick the business-specific CTA and visual direction, then run business:validate.");
 }
