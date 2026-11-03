@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./business-demo.module.css";
 
 type Attribution = { displayName?: string; uri?: string; photoUri?: string };
@@ -36,10 +36,10 @@ type FallbackReview = { quote: string; author: string; rating?: number; sourceUr
 
 const PlacesContext = createContext<PlacesContent | null>(null);
 
-function useGooglePhoto(slug: string, photoName?: string) {
+function useGooglePhoto(slug: string, photoName?: string, enabled = true) {
   const [imageUrl, setImageUrl] = useState<string>();
   useEffect(() => {
-    if (!photoName) { setImageUrl(undefined); return; }
+    if (!photoName || !enabled) { setImageUrl(undefined); return; }
     const controller = new AbortController();
     let objectUrl: string | undefined;
     setImageUrl(undefined);
@@ -59,21 +59,22 @@ function useGooglePhoto(slug: string, photoName?: string) {
       controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [slug, photoName]);
+  }, [slug, photoName, enabled]);
   return imageUrl;
 }
 
-export function BusinessAction({ label, href, fallbackHref, className }: {
+export function BusinessAction({ label, href, fallbackHref, className, showPhone = false }: {
   label: string;
   href: string;
   fallbackHref?: string;
   className: string;
+  showPhone?: boolean;
 }) {
   const data = useContext(PlacesContext);
   const placePhone = data?.phoneNumber ? `tel:${data.phoneNumber.replace(/[^0-9+]/g, "")}` : undefined;
   const targetHref = href === "place-phone" ? placePhone || fallbackHref || "#visit" : href;
   const external = targetHref.startsWith("http");
-  return <a className={className} href={targetHref} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{label}<span aria-hidden="true">↗</span></a>;
+  return <a className={className} href={targetHref} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{label}{showPhone && data?.phoneNumber ? <span className={styles.actionPhone}>{data.phoneNumber}</span> : null}<span aria-hidden="true">{href === "place-phone" ? "☎" : "↗"}</span></a>;
 }
 
 export function GooglePlacesProvider({
@@ -158,9 +159,21 @@ function GooglePhotoCard({ photo, businessName, source, slug, lead }: {
   lead: boolean;
 }) {
   const author = photo.authorAttributions?.[0];
-  const imageUrl = useGooglePhoto(slug, photo.name);
+  const cardRef = useRef<HTMLElement>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node) return;
+    if (!("IntersectionObserver" in window)) { setNearViewport(true); return; }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setNearViewport(true); observer.disconnect(); }
+    }, { rootMargin: "350px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const imageUrl = useGooglePhoto(slug, photo.name, nearViewport);
   return (
-    <figure className={`${styles.googlePhotoCard} ${lead ? styles.googlePhotoLead : ""}`}>
+    <figure ref={cardRef} className={`${styles.googlePhotoCard} ${lead ? styles.googlePhotoLead : ""}`}>
       <a className={styles.googlePhotoLink} href={source} target="_blank" rel="noreferrer" aria-label={`Open this photo of ${businessName} on Google Maps`}>
         {imageUrl ? <img className={styles.googlePhotoImage} src={imageUrl} alt={`${businessName} photo from Google Maps`} loading="lazy" /> : null}
       </a>
@@ -189,9 +202,11 @@ function shortQuote(value: string) {
 export function GoogleReviewProof({
   initialSummary,
   mapsUrl,
+  variant,
 }: {
   initialSummary?: FallbackSummary;
   mapsUrl?: string;
+  variant?: "automotive";
 }) {
   const data = useContext(PlacesContext);
   const rating = data?.rating ?? initialSummary?.rating;
@@ -205,7 +220,7 @@ export function GoogleReviewProof({
   if (!rating || !count) return null;
 
   return (
-    <div className={styles.proofCard}>
+    <div className={`${styles.proofCard} ${variant === "automotive" ? styles.automotiveProofCard : ""}`}>
       <a className={styles.proofCardLink} href={source} target="_blank" rel="noreferrer" aria-label="Open Google Maps reviews">
       <span className={styles.proofTop}><GoogleMapsLogo dark /><span>{stars(rating)} REVIEWS</span></span>
       <span className={styles.proofScore}>{rating}<small>/5</small></span>
@@ -220,10 +235,12 @@ export function GoogleReviewSection({
   fallbackReviews = [],
   fallbackSummary,
   mapsUrl,
+  variant,
 }: {
   fallbackReviews?: FallbackReview[];
   fallbackSummary?: FallbackSummary;
   mapsUrl?: string;
+  variant?: "automotive";
 }) {
   const data = useContext(PlacesContext);
   const liveReviews = data?.reviews?.length ? data.reviews : null;
@@ -240,7 +257,7 @@ export function GoogleReviewSection({
   if (!reviews.length) return null;
 
   return (
-    <section id="reviews" className={styles.reviewBand}>
+    <section id="reviews" className={`${styles.reviewBand} ${variant === "automotive" ? styles.automotiveReviewBand : ""}`}>
       <div className={styles.reviewIntro}>
         <p className={styles.eyebrow}>KIND WORDS, STRAIGHT FROM GOOGLE</p>
         <h2>Don’t just take our word for it.</h2>
@@ -276,7 +293,7 @@ export function GoogleReviewSection({
   );
 }
 
-export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl, eyebrow, heading, heroUsesPlacePhoto = false }: {
+export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], mapsUrl, eyebrow, heading, heroUsesPlacePhoto = false, id, variant }: {
   slug: string;
   businessName: string;
   fallbackMedia?: { src: string; alt: string; caption?: string; credit?: string; sourceUrl?: string }[];
@@ -284,14 +301,16 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
   eyebrow?: string;
   heading?: string;
   heroUsesPlacePhoto?: boolean;
+  id?: string;
+  variant?: "automotive";
 }) {
   const data = useContext(PlacesContext);
-  const photos = (data?.photos || []).slice(heroUsesPlacePhoto ? 1 : 0, heroUsesPlacePhoto ? 4 : 3);
+  const photos = (data?.photos || []).slice(heroUsesPlacePhoto ? 1 : 0, 10);
 
   if (!photos.length) {
     if (!fallbackMedia.length) return null;
     return (
-      <section className={styles.gallery} aria-label="Photos">
+      <section id={id} className={`${styles.gallery} ${variant === "automotive" ? styles.automotiveGallery : ""}`} aria-label="Photos">
         <div className={styles.galleryHeading}><p className={styles.eyebrow}>{eyebrow || "A closer look"}</p><h2>{heading || `Get to know ${businessName}.`}</h2></div>
         <div className={styles.galleryGrid}>{fallbackMedia.map((item, index) => <figure className={`${styles.galleryItem} ${index === 0 ? styles.galleryLarge : ""}`} key={item.src}>
           <Image src={item.src} alt={item.alt} fill sizes={index === 0 ? "(max-width: 760px) 100vw, 60vw" : "(max-width: 760px) 48vw, 30vw"} className={styles.galleryPhoto} />
@@ -302,7 +321,7 @@ export function GooglePlacesGallery({ slug, businessName, fallbackMedia = [], ma
   }
 
   return (
-    <section className={styles.gallery} aria-label="Google Maps photos">
+    <section id={id} className={`${styles.gallery} ${variant === "automotive" ? styles.automotiveGallery : ""}`} aria-label="Google Maps photos">
       <div className={styles.galleryHeading}><p className={styles.eyebrow}>{eyebrow || `FROM THE ${businessName.toUpperCase()} COMMUNITY`}</p><h2>{heading || "A look around."}</h2><GoogleMapsLogo dark /></div>
       <div className={styles.googlePhotoGrid}>
         {photos.map((photo, index) => {

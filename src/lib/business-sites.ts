@@ -65,9 +65,11 @@ export type BusinessSite = {
   secondaryCta?: { label: string; href: string };
   instagramUrl?: string;
   officialWebsiteUrl?: string;
+  portfolioUrl?: string;
+  portfolioLabel?: string;
   googlePlaceId?: string;
   accentColor?: string;
-  visualStyle?: "expressive" | "editorial" | "earthy" | "technical";
+  visualStyle?: "expressive" | "editorial" | "earthy" | "technical" | "architectural" | "darkMode";
   designDirection?: string;
   googleMapsUrl?: string;
   sourceUrl?: string;

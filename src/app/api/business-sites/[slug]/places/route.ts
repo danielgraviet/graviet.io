@@ -64,11 +64,7 @@ export async function GET(
   }
 
   const place = await response.json();
-  const allPhotos = place.photos || [];
-  const contributorPhotos = allPhotos.filter((photo: { authorAttributions?: { displayName?: string }[] }) =>
-    !photo.authorAttributions?.some((author) => author.displayName === place.displayName?.text),
-  );
-  const photos = (contributorPhotos.length ? contributorPhotos : allPhotos).slice(0, 4);
+  const photos = (place.photos || []).slice(0, 10);
   const reviews = (place.reviews || []).slice(0, 3).map((review: { text?: { text?: string; [key: string]: unknown } }) => ({
     ...review,
     text: review.text?.text ? { ...review.text, text: reviewExcerpt(review.text.text) } : review.text,

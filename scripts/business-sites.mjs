@@ -213,7 +213,7 @@ async function validate(slugValue) {
     if (item.sourceUrl && !item.sourceUrl.startsWith("https://")) errors.push(`Media ${item.src} sourceUrl must use HTTPS.`);
   }
   if (profile.heroImage && !profile.heroImageAlt) errors.push("Add meaningful heroImageAlt text.");
-  if (!profile.heroImage) errors.push("Add a strong first-fold image or original concept illustration.");
+  if (!profile.heroImage && !profile.googlePlaceId) errors.push("Add a strong first-fold image, original concept illustration, or live Google Places photo source.");
   for (const cta of [profile.primaryCta, profile.secondaryCta]) {
     if (cta && (!cta.label || !cta.href || cta.href === "#visit")) errors.push("Replace each placeholder CTA with a verified phone, order, booking, contact, or map destination.");
   }

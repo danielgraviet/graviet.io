@@ -12,7 +12,7 @@
   "intro": "Custom decks and pergolas for a little more room to live outside.",
   "googlePlaceId": "ChIJ1Z7WgpaFTYcR6WjHlE3R1K0",
   "primaryCta": {
-    "label": "Talk about your project",
+    "label": "Call now",
     "href": "place-phone"
   },
   "offeringsLabel": "Outdoor living, built around you",
@@ -51,10 +51,10 @@
       "credit": "Original concept artwork"
     }
   ],
-  "accentColor": "#64735b",
-  "visualStyle": "editorial",
-  "designDirection": "Mountain-modern and architectural: pine, pale limestone, warm cedar, fine blueprint details, and a confident editorial serif. Keep the page calm and crafted rather than rustic clip art.",
-  "heroBadge": "BUILT FOR OUTSIDE",
+  "accentColor": "#365443",
+  "visualStyle": "architectural",
+  "designDirection": "Architectural outdoor living: forest green, warm cedar, limestone, charcoal, crisp grid geometry, and condensed technical display type paired with a clean grotesk. Use real Google project photos prominently. No café-like rounded motifs.",
+  "heroBadge": "DECKS · PERGOLAS · OUTDOOR LIVING",
   "visitEyebrow": "VINEYARD · UTAH COUNTY",
   "visitHeading": "Let’s shape your outdoor space.",
   "visitIntro": "Tell us what you have in mind.",

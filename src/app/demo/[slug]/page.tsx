@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Image from "next/image";
-import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
+import { Bricolage_Grotesque, DM_Sans, Barlow_Condensed, Manrope } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getBusinessSite, getBusinessSiteSlugs } from "@/lib/business-sites";
 import { GooglePlacesProvider, GoogleReviewProof, GoogleReviewSection, GooglePlacesGallery, GooglePlaceContactDetails, GooglePlacesHero, BusinessAction } from "./GooglePlacesContent";
+import { AutomotiveShowcase } from "./AutomotiveShowcase";
 import styles from "./business-demo.module.css";
 
 const displayFont = Bricolage_Grotesque({ subsets: ["latin"], variable: "--demo-display" });
 const bodyFont = DM_Sans({ subsets: ["latin"], variable: "--demo-body" });
+const architecturalDisplayFont = Barlow_Condensed({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-architectural-display" });
+const architecturalBodyFont = Manrope({ subsets: ["latin"], variable: "--font-architectural-body" });
 
 export const dynamicParams = false;
 
@@ -43,7 +46,8 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
 
   return (
     <GooglePlacesProvider slug={site.slug} placeId={site.googlePlaceId} initialSummary={site.reviewSummary} initialReviews={site.reviews}>
-    <main className={`${styles.site} ${site.visualStyle ? styles[`${site.visualStyle}Theme`] : ""} ${displayFont.variable} ${bodyFont.variable}`} style={{ "--demo-accent": accent } as CSSProperties}>
+    <main className={`${styles.site} ${site.visualStyle ? styles[`${site.visualStyle}Theme`] : ""} ${displayFont.variable} ${bodyFont.variable} ${architecturalDisplayFont.variable} ${architecturalBodyFont.variable}`} style={{ "--demo-accent": accent } as CSSProperties}>
+      {site.visualStyle === "darkMode" ? <AutomotiveShowcase site={site} mapsUrl={mapsUrl} /> : <>
       <div className={styles.previewNotice}>
         <span>Independent website concept · Preview only</span>
         {site.reviewSummary ? <a href={site.reviewSummary.sourceUrl} target="_blank" rel="noreferrer"><span aria-label={`${site.reviewSummary.rating} out of 5 stars`} className={styles.stars}>★★★★★</span><strong>{site.reviewSummary.rating}</strong><span>· {site.reviewSummary.reviewCount} Google reviews</span></a> : null}
@@ -55,7 +59,7 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
           <span><strong>{site.name}</strong><small>{site.category}</small></span>
         </a>
         <nav className={styles.nav} aria-label="Main navigation">{site.signatureDrinks?.length || site.services.length ? <a href="#favorites">{site.offeringsLabel || "What we offer"}</a> : null}<a href="#reviews">Reviews</a><a href="#visit">Visit</a></nav>
-        {primaryCta ? <BusinessAction className={`${styles.button} ${styles.buttonSmall}`} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
+        {primaryCta ? <BusinessAction className={`${styles.button} ${styles.buttonSmall}`} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} showPhone={primaryCta.href === "place-phone"} /> : null}
       </header>
 
       <section id="home" className={styles.hero}>
@@ -64,8 +68,9 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
           <h1>{site.headline}</h1>
           <p className={styles.heroIntro}>{site.intro}</p>
           <div className={styles.heroActions}>
-            {primaryCta ? <BusinessAction className={styles.button} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
+            {primaryCta ? <BusinessAction className={styles.button} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} showPhone={primaryCta.href === "place-phone"} /> : null}
             {secondaryCta ? <a className={styles.textLink} href={secondaryCta.href} target={secondaryCta.href.startsWith("http") ? "_blank" : undefined} rel={secondaryCta.href.startsWith("http") ? "noreferrer" : undefined}>{secondaryCta.label}<span aria-hidden="true">↗</span></a> : null}
+            {site.portfolioUrl ? <a className={styles.textLink} href={site.portfolioUrl} target="_blank" rel="noreferrer">{site.portfolioLabel || "See our work"}<span aria-hidden="true">↗</span></a> : null}
           </div>
           <GoogleReviewProof initialSummary={site.reviewSummary} mapsUrl={mapsUrl} />
         </div>
@@ -108,7 +113,8 @@ export default async function BusinessDemoPage({ params }: { params: Promise<{ s
       </section>
 
       <footer className={styles.footer}><span>{site.name} · {site.city}</span><span className={styles.footerMeta}>Independent concept preview by Daniel Graviet <span><a href={`/demo/${site.slug}/terms`}>Terms</a> · <a href={`/demo/${site.slug}/privacy`}>Privacy</a></span></span></footer>
-      {primaryCta ? <BusinessAction className={styles.mobileCta} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} /> : null}
+      {primaryCta ? <BusinessAction className={styles.mobileCta} label={primaryCta.label} href={primaryCta.href} fallbackHref={mapsUrl} showPhone={primaryCta.href === "place-phone"} /> : null}
+      </>}
     </main>
     </GooglePlacesProvider>
   );
