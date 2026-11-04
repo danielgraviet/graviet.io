@@ -26,6 +26,8 @@ function normalizeDate(value: unknown): string {
 function parsePost(filename: string, includeBody = false): Post {
   const raw = fs.readFileSync(path.join(postsDir, filename), "utf8");
   const { data, content } = matter(raw);
+  const coverMatch = content.match(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/);
+  const coverPath = coverMatch?.[2];
   return {
     _id: filename.replace(/\.md$/, ""),
     title: data.title,
@@ -35,6 +37,9 @@ function parsePost(filename: string, includeBody = false): Post {
     tags: Array.isArray(data.tags) ? data.tags : [],
     featured: data.featured === true,
     externalUrl: data.externalUrl,
+    ...(coverPath?.startsWith("/")
+      ? { coverImage: coverPath, coverImageAlt: coverMatch?.[1] ?? "" }
+      : {}),
     body: includeBody ? content : undefined,
   };
 }

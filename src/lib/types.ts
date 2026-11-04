@@ -7,6 +7,8 @@ export interface Post {
   tags: string[];
   featured: boolean;
   externalUrl?: string;
+  coverImage?: string;
+  coverImageAlt?: string;
   body?: string;
 }
 
